@@ -1,0 +1,82 @@
+# Importance Scoring Algorithm Configuration
+# Authority: docs/architecture/G-importance-algorithm.md (§53-G), decisions.md Conflict #1
+# Single source of truth: config/importance.yaml (per Addendum §9, review V-6)
+#
+# Formula:
+#   importance_score = w_impact          * impact_score
+#                    + w_urgency         * urgency_score
+#                    + w_proximity       * proximity_score
+#                    + w_public_importance * public_importance_score
+#                    + w_momentum        * momentum_score
+#
+# CRITICAL: confidence_score is NOT a component of importance_score.
+# This resolves decisions.md Conflict #1 (Master Spec §21 vs Addendum §5).
+# Event dengan confidence rendah TIDAK diturunkan ranking-nya secara diam-diam.
+
+weights:
+  impact: 0.30           # dampak fisik / keselamatan / infrastruktur
+  urgency: 0.20          # seberapa mendesak perhatian pengguna sekarang
+  proximity: 0.15        # relevansi geografis terhadap lokasi pengguna
+  public_importance: 0.15 # skala kepentingan publik & sumber resmi
+  momentum: 0.20         # seberapa aktif event berkembang (last 6h)
+# Weights sum = 1.00 ✓
+
+# UNCALIBRATED — starting estimate. Update after Stage 04 gold-set evaluation per ADR-004.
+thresholds:
+  high: 0.70    # importance_score >= 0.70 → label HIGH IMPACT / NEED TO KNOW
+  medium: 0.40  # 0.40 <= score < 0.70    → label MEDIUM
+                # score < 0.40            → label INFORMATIONAL
+
+# UI label rules (combination of importance + urgency + actionability)
+# See G-importance-algorithm.md §4 for full label logic.
+ui_labels:
+  need_to_know:   { min_importance: 0.70, min_urgency: 0.60 }   # 🔴 NEED TO KNOW
+  high_impact:    { min_importance: 0.70, max_urgency: 0.60 }    # 📌 HIGH IMPACT
+  developing:     { min_momentum: 0.60 }                          # 📈 DEVELOPING
+  informational:  { max_importance: 0.40, max_momentum: 0.30 }   # ℹ INFORMATIONAL
+  # action_required / action_recommended → driven by actionability_level field
+
+# Impact score lookup table (see G-importance-algorithm.md §2.1)
+# UNCALIBRATED — mapped from domain knowledge, validate against evaluation set.
+impact_signals:
+  - signal: "korban_jiwa_atau_evakuasi_massal"
+    score: 1.00
+  - signal: "infrastruktur_kritis_terdampak"   # rel, jalan tol, bandara
+    score: 0.85
+  - signal: "siaga_darurat_bencana"             # Siaga 1/2 BPBD
+    score: 0.80
+  - signal: "gangguan_transportasi_signifikan"  # > 50% kapasitas
+    score: 0.65
+  - signal: "kebijakan_publik_dampak_luas"
+    score: 0.60
+  - signal: "gangguan_layanan_publik_minor"
+    score: 0.40
+  - signal: "informatif_tidak_langsung"
+    score: 0.20
+
+# Proximity score lookup table (see G-importance-algorithm.md §2.3)
+# Default user location = Jakarta (DEC-0001)
+proximity_scores:
+  same_city: 1.00           # Kota yang sama (mis. Jakarta)
+  same_province: 0.75       # Provinsi yang sama (DKI Jakarta)
+  national: 0.50            # Indonesia (nasional)
+  southeast_asia: 0.25      # Asia Tenggara
+  international: 0.10       # Internasional
+
+# Public importance parameters (see G-importance-algorithm.md §2.4)
+public_importance:
+  gov_source_weight: 0.40           # bonus jika ada klaim dari GOV_* source_family
+  per_unique_family_weight: 0.10    # per unique source_family (max 0.40)
+  category_base_scores:
+    disaster_and_weather: 0.20
+    transportation_and_infrastructure: 0.15
+    government_and_public_policy: 0.15
+    default: 0.10
+
+# Momentum parameters (see G-importance-algorithm.md §2.5)
+# UNCALIBRATED — tune based on observed event update frequency.
+momentum:
+  snapshot_window_hours: 6
+  claim_window_hours: 6
+  snapshot_normalization: 3   # 3 snapshots in 6h = score 1.0
+  claim_normalization: 10     # 10 new claims in 6h = score 1.0

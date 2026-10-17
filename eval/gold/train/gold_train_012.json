@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_train_012",
+  "article_id": "art_train_12",
+  "source_domain": "republika.co.id",
+  "published_at": "2026-10-11T12:00:00Z",
+  "category": "government_and_public_policy",
+  "labels": {
+    "event_id": "evt_idn_trans_subsidy_2026_10",
+    "timeline_order": 3,
+    "location_canonical": "Jakarta Pusat, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": false,
+    "action_policy": "OPTIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_train_012",
+      "verbatim_quote": "Kemenhub menyatakan kartu terpadu bersubsidi akan mulai dibagikan bulan depan untuk kalangan pelajar dan pekerja.",
+      "speaker": "Kemenhub",
+      "statement": "Kartu komuter bersubsidi dibagikan bulan depan",
+      "stance": "support",
+      "canonical_event_id": "evt_idn_trans_subsidy_2026_10"
+    }
+  ]
+}

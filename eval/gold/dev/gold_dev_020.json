@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_dev_020",
+  "article_id": "art_dev_20",
+  "source_domain": "tempo.co",
+  "published_at": "2026-10-12T11:00:00Z",
+  "category": "government_and_public_policy",
+  "labels": {
+    "event_id": "evt_dki_relokasi_2026_10",
+    "timeline_order": 1,
+    "location_canonical": "Jakarta Timur, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "OPTIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_dev_020",
+      "verbatim_quote": "Pemerintah Provinsi DKI Jakarta menyiapkan 500 unit rusunawa di Jakarta Timur untuk merelokasi warga yang bermukim di titik rawan longsor bantaran Kali Ciliwung.",
+      "speaker": "Pemprov DKI",
+      "statement": "Pemprov DKI siapkan 500 unit rusunawa relokasi bantaran Ciliwung",
+      "stance": "support",
+      "canonical_event_id": "evt_dki_relokasi_2026_10"
+    }
+  ]
+}

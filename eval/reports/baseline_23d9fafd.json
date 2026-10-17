@@ -1,0 +1,14 @@
+{
+  "report_id": "baseline_23d9fafd",
+  "run_type": "baseline",
+  "generated_at": "2026-10-14T17:18:40.208928+00:00",
+  "fixture_path": "eval/fixtures/seed_demo_23.json",
+  "processing_run_id": "e9cf40ab-98c5-47db-af3f-e5d7ea2a5bb8",
+  "articles_analyzed": 23,
+  "claims_extracted": 59,
+  "events_resolved": 9,
+  "snapshots_created": 9,
+  "timeline_entries": 57,
+  "conflicts_detected": 15,
+  "status": "PASS"
+}

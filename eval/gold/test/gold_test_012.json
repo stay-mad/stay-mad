@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_012",
+  "article_id": "art_test_12",
+  "source_domain": "news.detik.com",
+  "published_at": "2026-10-10T10:15:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_isolated_injection_test",
+    "timeline_order": 0,
+    "location_canonical": "Jakarta Timur, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": false,
+    "action_policy": "NO_IMMEDIATE_ACTION",
+    "action_policy_violation": true
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_012",
+      "verbatim_quote": "Arus tol dalam kota lancar pagi ini.",
+      "speaker": null,
+      "statement": "Arus tol dalam kota terpantau lancar",
+      "stance": "neutral",
+      "canonical_event_id": "evt_isolated_injection_test"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_dev_010",
+  "article_id": "art_dev_10",
+  "source_domain": "bnpb.go.id",
+  "published_at": "2026-10-11T08:00:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_jtg_merapi_2026_10",
+    "timeline_order": 3,
+    "location_canonical": "Sleman, DI Yogyakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "ACTION_RECOMMENDED",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_dev_010",
+      "verbatim_quote": "Rekomendasi zona bahaya ditetapkan sejauh 5 km pada sektor selatan-barat daya.",
+      "speaker": "BNPB",
+      "statement": "Zona bahaya Merapi ditetapkan radius 5 km",
+      "stance": "support",
+      "canonical_event_id": "evt_jtg_merapi_2026_10"
+    }
+  ]
+}

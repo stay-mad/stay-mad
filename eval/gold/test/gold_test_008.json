@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_008",
+  "article_id": "art_test_08",
+  "source_domain": "antaranews.com",
+  "published_at": "2026-10-14T06:40:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_test_diy_gempa",
+    "timeline_order": 2,
+    "location_canonical": "Bantul, DI Yogyakarta",
+    "has_conflict": false,
+    "expected_change": false,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_008",
+      "verbatim_quote": "Warga di pesisir Parangtritis Bantul berhamburan keluar rumah saat gempa M 5.2 mengguncang sekitar pukul 06:10 WIB.",
+      "speaker": null,
+      "statement": "Warga Parangtritis keluar rumah akibat guncangan gempa",
+      "stance": "support",
+      "canonical_event_id": "evt_test_diy_gempa"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+version: "3.8"
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: staymad_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-staymad}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-staymad_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-staymad_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-staymad} -d ${POSTGRES_DB:-staymad_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - staymad_net
+
+  backend:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    container_name: staymad_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-staymad}:${POSTGRES_PASSWORD:-staymad_secret}@db:5432/${POSTGRES_DB:-staymad_db}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      RUN_MIGRATIONS: "true"
+      PORT: 8080
+      HOST: 0.0.0.0
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_FIXTURE_MODE: ${GEMINI_FIXTURE_MODE:-false}
+      DATA_MODE: ${DATA_MODE:-live}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+      CORS_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000"
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - staymad_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+    container_name: staymad_frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - staymad_net
+
+volumes:
+  postgres_data:
+
+networks:
+  staymad_net:
+    driver: bridge

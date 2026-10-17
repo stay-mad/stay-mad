@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_train_008",
+  "article_id": "art_train_08",
+  "source_domain": "antaranews.com",
+  "published_at": "2026-10-11T08:00:00Z",
+  "category": "transportation_and_infrastructure",
+  "labels": {
+    "event_id": "evt_jkt_krl_2026_10",
+    "timeline_order": 2,
+    "location_canonical": "Jakarta Selatan, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "ACTION_RECOMMENDED",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_train_008",
+      "verbatim_quote": "PT KCI merekayasa pola rute KRL Bogor hanya sampai Manggarai guna mengurai antrean kereta.",
+      "speaker": "PT KCI",
+      "statement": "KRL rute Bogor direkayasa hanya sampai Manggarai",
+      "stance": "support",
+      "canonical_event_id": "evt_jkt_krl_2026_10"
+    }
+  ]
+}

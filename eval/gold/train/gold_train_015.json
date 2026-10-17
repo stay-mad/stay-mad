@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_train_015",
+  "article_id": "art_train_15",
+  "source_domain": "tempo.co",
+  "published_at": "2026-10-13T10:00:00Z",
+  "category": "transportation_and_infrastructure",
+  "labels": {
+    "event_id": "evt_jtg_pantura_2026_10",
+    "timeline_order": 3,
+    "location_canonical": "Demak, Jawa Tengah",
+    "has_conflict": false,
+    "expected_change": false,
+    "action_policy": "NO_IMMEDIATE_ACTION",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_train_015",
+      "verbatim_quote": "Antrean kendaraan mengular hingga 4 kilometer akibat pengerjaan betonisasi jalur Pantura Demak arah Kudus.",
+      "speaker": null,
+      "statement": "Antrean kendaraan mencapai 4 km di Pantura Demak",
+      "stance": "support",
+      "canonical_event_id": "evt_jtg_pantura_2026_10"
+    }
+  ]
+}

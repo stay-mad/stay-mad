@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_train_003",
+  "article_id": "art_train_03",
+  "source_domain": "bpbd.jakarta.go.id",
+  "published_at": "2026-10-10T08:00:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_jakarta_flood_2026_10",
+    "timeline_order": 1,
+    "location_canonical": "Jakarta Timur, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_train_003",
+      "verbatim_quote": "BPBD DKI mencatat Pos Pantau Depok naik ke Siaga 3 pada dini hari.",
+      "speaker": "BPBD DKI",
+      "statement": "TMA Pos Pantau Depok naik ke Siaga 3",
+      "stance": "support",
+      "canonical_event_id": "evt_jakarta_flood_2026_10"
+    }
+  ]
+}

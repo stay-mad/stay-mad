@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_dev_014",
+  "article_id": "art_dev_14",
+  "source_domain": "kompas.com",
+  "published_at": "2026-10-12T14:20:00Z",
+  "category": "transportation_and_infrastructure",
+  "labels": {
+    "event_id": "evt_jkt_mrt_2026_10",
+    "timeline_order": 1,
+    "location_canonical": "Jakarta Pusat, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_dev_014",
+      "verbatim_quote": "Operasional kereta MRT Jakarta lintas Bundaran HI sempat tertahan selama 20 menit akibat fluktuasi pasokan daya listrik pada gardu traksi bawah tanah.",
+      "speaker": "MRT Jakarta",
+      "statement": "MRT lintas Bundaran HI tertahan 20 menit akibat fluktuasi daya",
+      "stance": "support",
+      "canonical_event_id": "evt_jkt_mrt_2026_10"
+    }
+  ]
+}

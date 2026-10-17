@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_020",
+  "article_id": "art_test_20",
+  "source_domain": "cnbcindonesia.com",
+  "published_at": "2026-10-10T12:00:00Z",
+  "category": "transportation_and_infrastructure",
+  "labels": {
+    "event_id": "evt_test_pln_gandul",
+    "timeline_order": 2,
+    "location_canonical": "Depok, Jawa Barat",
+    "has_conflict": false,
+    "expected_change": false,
+    "action_policy": "NO_IMMEDIATE_ACTION",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_020",
+      "verbatim_quote": "PLN memastikan pasokan listrik wilayah Jabodetabek tetap andal dan aman pasca pengujian gardu Gandul.",
+      "speaker": "PLN",
+      "statement": "Pasokan listrik Jabodetabek dipastikan stabil",
+      "stance": "support",
+      "canonical_event_id": "evt_test_pln_gandul"
+    }
+  ]
+}

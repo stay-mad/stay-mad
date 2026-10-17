@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_train_013",
+  "article_id": "art_train_13",
+  "source_domain": "antaranews.com",
+  "published_at": "2026-10-13T08:00:00Z",
+  "category": "transportation_and_infrastructure",
+  "labels": {
+    "event_id": "evt_jtg_pantura_2026_10",
+    "timeline_order": 1,
+    "location_canonical": "Demak, Jawa Tengah",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_train_013",
+      "verbatim_quote": "Balai Pelaksanaan Jalan Nasional memulai perbaikan jalan amblas di Jalur Pantura Demak kilometer 42 hari ini.",
+      "speaker": "BPJN",
+      "statement": "Perbaikan jalan amblas Pantura Demak km 42 dimulai",
+      "stance": "support",
+      "canonical_event_id": "evt_jtg_pantura_2026_10"
+    }
+  ]
+}

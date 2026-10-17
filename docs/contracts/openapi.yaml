@@ -1,0 +1,1035 @@
+openapi: "3.1.0"
+
+info:
+  title: Stay Mad API
+  version: "0.1.0"
+  description: |
+    REST API untuk platform Event Intelligence Stay Mad.
+    Semua endpoint membaca data yang sudah dipersist dan divalidasi.
+    Page load TIDAK menunggu Gemini (async processing).
+    
+    **Authority**: Perubahan API publik memerlukan ADR.
+  contact:
+    name: Stay Mad Team
+  license:
+    name: Internal
+
+servers:
+  - url: https://backend-{hash}-{region}.run.app
+    description: Cloud Run Production
+    variables:
+      hash:
+        default: "HASH"
+      region:
+        default: "asia-southeast1"
+  - url: http://localhost:8080
+    description: Local Development
+
+tags:
+  - name: events
+    description: Event Intelligence endpoints
+  - name: locations
+    description: Geographic reference endpoints
+  - name: system
+    description: Health dan operational endpoints
+
+paths:
+
+  # ─── EVENTS ────────────────────────────────────────────────────────────────
+
+  /events:
+    get:
+      operationId: listEvents
+      summary: Daftar event yang dipublikasi
+      description: |
+        Mengembalikan daftar EventSnapshot terbaru per event, diurutkan
+        berdasarkan importance_score DESC. Mendukung filter kategori, lokasi,
+        dan data mode. Semua angka berasal dari processing_run_id yang valid.
+      tags:
+        - events
+      parameters:
+        - name: category
+          in: query
+          schema:
+            $ref: "#/components/schemas/EventCategory"
+          description: Filter berdasarkan kategori
+        - name: location_province
+          in: query
+          schema:
+            type: string
+          example: "DKI Jakarta"
+          description: Filter berdasarkan provinsi
+        - name: location_city
+          in: query
+          schema:
+            type: string
+          example: "Jakarta Timur"
+        - name: data_mode
+          in: query
+          schema:
+            $ref: "#/components/schemas/DataMode"
+          description: Filter mode data (live, demo, atau degraded)
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: since
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Kembalikan event yang diperbarui setelah timestamp ini (UTC ISO-8601)
+      responses:
+        "200":
+          description: Daftar event berhasil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /events/{id}:
+    get:
+      operationId: getEvent
+      summary: Detail event terkini
+      description: |
+        Mengembalikan EventSnapshot terbaru untuk event yang ditentukan,
+        beserta semua field WHAT HAPPENED, WHAT CHANGED, WHY IT MATTERS,
+        WHO IS AFFECTED, WHAT IS UNKNOWN, confidence, dan actionability.
+      tags:
+        - events
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+      responses:
+        "200":
+          description: Detail event berhasil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventDetailResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /events/{id}/timeline:
+    get:
+      operationId: getEventTimeline
+      summary: Timeline kronologis event
+      description: |
+        Mengembalikan TimelineEntry[] dalam urutan kronologis (event_time ASC).
+        Setiap entri menyertakan precision qualifier dan evidence_claim_ids.
+        Waktu ditampilkan dalam Asia/Jakarta (WIB).
+      tags:
+        - events
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+        - name: snapshot_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Jika diberikan, tampilkan timeline untuk snapshot tertentu
+      responses:
+        "200":
+          description: Timeline berhasil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimelineResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /events/{id}/sources:
+    get:
+      operationId: getEventSources
+      summary: Daftar sumber artikel event
+      description: |
+        Mengembalikan daftar sumber artikel (dengan URL asli) yang berkontribusi
+        pada event ini, dikelompokkan berdasarkan source_family.
+      tags:
+        - events
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+      responses:
+        "200":
+          description: Sumber berhasil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourcesResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /events/{id}/changes:
+    get:
+      operationId: getEventChanges
+      summary: Change set antar snapshot event
+      description: |
+        Mengembalikan EventChange[] yang menunjukkan perubahan material
+        antara dua snapshot terbaru (atau antara snapshot yang ditentukan).
+        Hanya perubahan material (bukan wording-only) yang dikembalikan.
+      tags:
+        - events
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+        - name: from_snapshot_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: "Snapshot awal (default: snapshot kedua terakhir)"
+        - name: to_snapshot_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: "Snapshot akhir (default: snapshot terbaru)"
+      responses:
+        "200":
+          description: Change set berhasil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChangesResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /events/{id}/analysis:
+    get:
+      operationId: getEventAnalysis
+      summary: Analisis dan konflik event
+      description: |
+        Mengembalikan data analisis: daftar Conflict records, confidence signals,
+        dan claim summary. Digunakan oleh Screen 2 (Event Detail) untuk
+        bagian WHAT IS UNCLEAR.
+      tags:
+        - events
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+      responses:
+        "200":
+          description: Analisis berhasil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalysisResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /events/{id}/processing:
+    get:
+      operationId: getEventProcessing
+      summary: Processing & Evidence (Screen 3)
+      description: |
+        Mengembalikan data transparansi untuk Screen 3 "Processing & Evidence".
+        Mencakup: jumlah artikel, klaim, kandidat, keputusan resolusi,
+        konflik, timeline entries, versi model/prompt/schema, dan sinyal confidence.
+        
+        **TIDAK mengandung chain-of-thought Gemini** (sesuai Addendum §5.8).
+        Hanya decision reason codes, counts, source links, dan confidence signals.
+      tags:
+        - events
+      parameters:
+        - $ref: "#/components/parameters/EventId"
+        - name: snapshot_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Jika diberikan, tampilkan data processing untuk snapshot tertentu
+      responses:
+        "200":
+          description: Processing data berhasil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProcessingResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ─── LOCATIONS ─────────────────────────────────────────────────────────────
+
+  /locations:
+    get:
+      operationId: listLocations
+      summary: Daftar lokasi dengan event aktif
+      description: |
+        Mengembalikan daftar Location yang memiliki event aktif.
+        Mendukung filter geo_level untuk navigasi hierarki.
+      tags:
+        - locations
+      parameters:
+        - name: geo_level
+          in: query
+          schema:
+            $ref: "#/components/schemas/GeoLevel"
+        - name: parent_province
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lokasi berhasil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocationsResponse"
+
+  # ─── SYSTEM ────────────────────────────────────────────────────────────────
+
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check endpoint
+      description: |
+        Mengembalikan status sistem: database connectivity, Gemini reachability,
+        fixture mode status, dan environment.
+        
+        **CRITICAL**: Mengembalikan HTTP 503 jika:
+        - Database tidak terhubung
+        - `fixture_mode = true` di environment `production`
+        - `GEMINI_API_KEY` tidak valid di production
+        
+        Digunakan oleh Cloud Run health check dan smoke test.
+      tags:
+        - system
+      responses:
+        "200":
+          description: Sistem sehat
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "503":
+          description: Sistem tidak siap (misconfigured atau dependency gagal)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+# ─── COMPONENTS ──────────────────────────────────────────────────────────────
+
+components:
+
+  parameters:
+    EventId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID event (UUID)
+
+  responses:
+    NotFound:
+      description: Resource tidak ditemukan
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    BadRequest:
+      description: Parameter tidak valid
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+
+    # ── Enums ─────────────────────────────────────────────────────────────────
+
+    EventCategory:
+      type: string
+      enum:
+        - disaster_and_weather
+        - transportation_and_infrastructure
+        - government_and_public_policy
+      description: "3 kategori MVP. Extensible via ADR."
+
+    DataMode:
+      type: string
+      enum:
+        - live
+        - demo
+        - degraded
+      description: |
+        Mode data dan status operasional sistem:
+        - live: data aktual dari sumber resmi/feed terverifikasi
+        - demo: data simulasi/fixture untuk pengujian
+        - degraded: sistem beroperasi dalam kondisi keterbatasan sumber/degradasi layanan eksternal (Addendum §5.7–5.8)
+
+    GeoLevel:
+      type: string
+      enum:
+        - city
+        - province
+        - country
+        - continent
+        - world
+
+    EvidenceStatus:
+      type: string
+      enum:
+        - SUPPORTED
+        - CONFLICTING
+        - INSUFFICIENT
+        - RETRACTED
+      description: "Status bukti event-level (Addendum §5, ADR-004)"
+
+    VerificationLevel:
+      type: string
+      enum:
+        - OFFICIAL_PRIMARY
+        - INDEPENDENTLY_CORROBORATED
+        - SINGLE_SOURCE
+      description: "Tingkat verifikasi sumber (ADR-004)"
+
+    ConfidenceBucket:
+      type: string
+      enum:
+        - HIGH
+        - MEDIUM
+        - LOW
+      description: "Bucket tampilan saja; sumber kebenaran adalah confidence_score numerik"
+
+    ActionabilityLevel:
+      type: string
+      enum:
+        - ACTION_REQUIRED
+        - ACTION_RECOMMENDED
+        - OPTIONAL
+        - INFORMATIONAL
+        - NO_IMMEDIATE_ACTION
+
+    TimelinePrecision:
+      type: string
+      enum:
+        - EXACT
+        - APPROXIMATE
+        - DAY
+        - RANGE
+        - UNKNOWN
+
+    ChangeType:
+      type: string
+      enum:
+        - ADDED
+        - UPDATED
+        - CORRECTED
+        - RETRACTED
+
+    ClaimStatus:
+      type: string
+      enum:
+        - CONFIRMED
+        - SUPPORTED
+        - UNCONFIRMED
+        - CONFLICTING
+        - UNKNOWN
+      description: |
+        Status klaim atomik (Addendum §5.4, Master Spec §12).
+        Mapping ke level event: CONFIRMED di level klaim berkorespondensi dengan
+        evidence_status=SUPPORTED dan verification_level=OFFICIAL_PRIMARY di level event.
+
+    ResolutionDecision:
+      type: string
+      enum:
+        - SAME_EVENT
+        - RELATED_EVENT
+        - SEPARATE_EVENT
+        - NEEDS_REVIEW
+      description: |
+        Keputusan resolusi keanggotaan artikel/klaim ke dalam event
+        (Addendum §6, ADR-005, EventMembershipAudit).
+
+    SourceTier:
+      type: string
+      enum:
+        - TIER_1
+        - TIER_2
+      description: |
+        Klasifikasi kredibilitas sumber data:
+        - TIER_1: Sumber primer pemerintah (BMKG, BPBD, BNPB, Setkab), kantor berita negara (ANTARA), media rujukan utama.
+        - TIER_2: Media komersial bereputasi (CNN Indonesia, Detikcom, Tempo, CNBC Indonesia, Republika).
+
+    ChangeCategory:
+      type: string
+      enum:
+        - AREA_CHANGE
+        - ALERT_STATUS
+        - ESCALATION
+        - NUMERICAL
+        - NEWLY_CONFIRMED
+        - NEWLY_CONFLICTING
+      description: |
+        Kategori perubahan semantik antar-snapshot event (Addendum §7).
+
+    TimelineQualifier:
+      type: string
+      enum:
+        - sekitar
+        - sebelum
+        - diperkirakan
+        - dilaporkan_pada
+        - tepat
+      description: |
+        Kualifikasi temporal kanonikal dalam Bahasa Indonesia (Addendum §7, Master Spec §16).
+
+    # ── Core Objects ──────────────────────────────────────────────────────────
+
+    Location:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        city:
+          type: string
+          nullable: true
+        district:
+          type: string
+          nullable: true
+        province:
+          type: string
+          nullable: true
+        country:
+          type: string
+        geo_level:
+          $ref: "#/components/schemas/GeoLevel"
+        canonical_name:
+          type: string
+
+    ConfidenceSignals:
+      type: object
+      description: "Komponen confidence yang dapat dijelaskan ke pengguna"
+      properties:
+        confidence_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        confidence_bucket:
+          $ref: "#/components/schemas/ConfidenceBucket"
+        evidence_status:
+          $ref: "#/components/schemas/EvidenceStatus"
+        verification_level:
+          $ref: "#/components/schemas/VerificationLevel"
+        components:
+          type: object
+          properties:
+            source_quality:
+              type: number
+              format: float
+            corroboration:
+              type: number
+              format: float
+            claim_consistency:
+              type: number
+              format: float
+            official_confirmation:
+              type: number
+              format: float
+            temporal_consistency:
+              type: number
+              format: float
+        signals_text:
+          type: array
+          items:
+            type: string
+          description: "Penjelasan human-readable untuk UI (mis. '✓ Dikonfirmasi BPBD DKI')"
+
+    EventSummary:
+      type: object
+      required:
+        - id
+        - category
+        - headline
+        - confidence_signals
+        - importance_score
+        - urgency_score
+        - actionability_level
+        - data_mode
+        - last_processed_at
+        - processing_run_id
+      properties:
+        id:
+          type: string
+          format: uuid
+        category:
+          $ref: "#/components/schemas/EventCategory"
+        headline:
+          type: string
+          description: "Judul event dalam Bahasa Indonesia"
+        primary_location:
+          $ref: "#/components/schemas/Location"
+        time_window_start:
+          type: string
+          format: date-time
+          nullable: true
+        time_window_end:
+          type: string
+          format: date-time
+          nullable: true
+        confidence_signals:
+          $ref: "#/components/schemas/ConfidenceSignals"
+        importance_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        urgency_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        actionability_level:
+          $ref: "#/components/schemas/ActionabilityLevel"
+        snapshot_id:
+          type: string
+          format: uuid
+        data_mode:
+          $ref: "#/components/schemas/DataMode"
+        last_processed_at:
+          type: string
+          format: date-time
+        processing_run_id:
+          type: string
+          format: uuid
+
+    # ── Response Schemas ──────────────────────────────────────────────────────
+
+    EventListResponse:
+      type: object
+      required:
+        - events
+        - total
+        - data_mode
+      properties:
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/EventSummary"
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+        data_mode:
+          $ref: "#/components/schemas/DataMode"
+
+    EvidenceField:
+      type: object
+      properties:
+        text:
+          type: string
+          nullable: true
+        evidence_claim_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    ActionItem:
+      type: object
+      properties:
+        action_level:
+          $ref: "#/components/schemas/ActionabilityLevel"
+        action_text:
+          type: string
+        evidence_claim_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    EventDetailResponse:
+      type: object
+      required:
+        - id
+        - snapshot_id
+        - category
+        - headline
+        - what_happened
+        - confidence_signals
+        - importance_score
+        - urgency_score
+        - actionability_level
+        - data_mode
+        - last_processed_at
+        - processing_run_id
+      properties:
+        id:
+          type: string
+          format: uuid
+        snapshot_id:
+          type: string
+          format: uuid
+        category:
+          $ref: "#/components/schemas/EventCategory"
+        headline:
+          type: string
+        primary_location:
+          $ref: "#/components/schemas/Location"
+        time_window_start:
+          type: string
+          format: date-time
+          nullable: true
+        what_happened:
+          $ref: "#/components/schemas/EvidenceField"
+        why_it_matters:
+          $ref: "#/components/schemas/EvidenceField"
+        who_is_affected:
+          $ref: "#/components/schemas/EvidenceField"
+        what_is_unknown:
+          $ref: "#/components/schemas/EvidenceField"
+        conflict_summary:
+          $ref: "#/components/schemas/EvidenceField"
+        actions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActionItem"
+        confidence_signals:
+          $ref: "#/components/schemas/ConfidenceSignals"
+        importance_score:
+          type: number
+          format: float
+        urgency_score:
+          type: number
+          format: float
+        actionability_level:
+          $ref: "#/components/schemas/ActionabilityLevel"
+        data_mode:
+          $ref: "#/components/schemas/DataMode"
+        last_processed_at:
+          type: string
+          format: date-time
+        processing_run_id:
+          type: string
+          format: uuid
+
+    TimelineEntry:
+      type: object
+      required:
+        - id
+        - description
+        - order_index
+        - event_time_precision
+        - evidence_claim_ids
+      properties:
+        id:
+          type: string
+          format: uuid
+        event_time:
+          type: string
+          format: date-time
+          nullable: true
+          description: "UTC; UI menampilkan dalam Asia/Jakarta (WIB)"
+        display_time:
+          type: string
+          nullable: true
+          description: "Teks tampilan WIB, mis. 'Sekitar 08:10 WIB'"
+        event_time_precision:
+          $ref: "#/components/schemas/TimelinePrecision"
+        event_time_qualifier:
+          $ref: "#/components/schemas/TimelineQualifier"
+          nullable: true
+          description: "Kualifikasi temporal kanonikal: sekitar, sebelum, diperkirakan, dilaporkan_pada, tepat."
+        description:
+          type: string
+          description: "Bahasa Indonesia"
+        evidence_claim_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        order_index:
+          type: integer
+
+    TimelineResponse:
+      type: object
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        snapshot_id:
+          type: string
+          format: uuid
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimelineEntry"
+        processing_run_id:
+          type: string
+          format: uuid
+
+    SourceItem:
+      type: object
+      properties:
+        source_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        source_tier:
+          $ref: "#/components/schemas/SourceTier"
+        source_family:
+          type: string
+        article_url:
+          type: string
+          format: uri
+          description: "URL asli artikel; wajib ditampilkan di UI"
+        published_time:
+          type: string
+          format: date-time
+        article_version_id:
+          type: string
+          format: uuid
+
+    SourcesResponse:
+      type: object
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceItem"
+        unique_source_families:
+          type: integer
+        processing_run_id:
+          type: string
+          format: uuid
+
+    ChangeItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        change_type:
+          $ref: "#/components/schemas/ChangeType"
+        change_category:
+          $ref: "#/components/schemas/ChangeCategory"
+          nullable: true
+        field_name:
+          type: string
+          nullable: true
+        before_value:
+          type: string
+          nullable: true
+        after_value:
+          type: string
+          nullable: true
+        evidence_claim_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    ChangesResponse:
+      type: object
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        from_snapshot_id:
+          type: string
+          format: uuid
+        to_snapshot_id:
+          type: string
+          format: uuid
+        changes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChangeItem"
+        material_change_count:
+          type: integer
+
+    ConflictItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        field_name:
+          type: string
+        claim_a_id:
+          type: string
+          format: uuid
+        claim_b_id:
+          type: string
+          format: uuid
+        value_a:
+          type: string
+        value_b:
+          type: string
+        context:
+          type: string
+          nullable: true
+        resolved:
+          type: boolean
+
+    AnalysisResponse:
+      type: object
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        snapshot_id:
+          type: string
+          format: uuid
+        conflicts:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConflictItem"
+        confidence_signals:
+          $ref: "#/components/schemas/ConfidenceSignals"
+        claim_count:
+          type: integer
+        conflicting_claim_count:
+          type: integer
+        processing_run_id:
+          type: string
+          format: uuid
+
+    ProcessingResponse:
+      type: object
+      description: |
+        Data untuk Screen 3 "Processing & Evidence".
+        Tidak mengandung chain-of-thought Gemini (Addendum §5.8).
+        Hanya counts, decision reason codes, source links, dan confidence signals.
+      required:
+        - event_id
+        - processing_run_id
+        - model_version
+        - prompt_version
+        - schema_version
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        snapshot_id:
+          type: string
+          format: uuid
+        processing_run_id:
+          type: string
+          format: uuid
+        correlation_id:
+          type: string
+          nullable: true
+          description: "Correlation ID untuk pelacakan alur job/request secara end-to-end (Addendum §9)"
+        articles_analyzed:
+          type: integer
+          description: "Jumlah ArticleVersion yang diproses untuk event ini"
+        claims_extracted:
+          type: integer
+          description: "Jumlah Claim yang terasosiasi dengan event ini"
+        candidate_events_considered:
+          type: integer
+          description: "Jumlah kandidat event yang dievaluasi sebelum resolusi final"
+        timeline_entries:
+          type: integer
+        conflicts_detected:
+          type: integer
+        decision_reason_codes:
+          type: array
+          items:
+            type: string
+          description: "Kode alasan resolusi event (mis. ['LOC_MATCH', 'CORROBORATED'])"
+        resolution_tier_used:
+          type: string
+          enum: [TIER_1, TIER_2, TIER_3]
+          description: "Tier resolusi tertinggi yang digunakan"
+        confidence_signals:
+          $ref: "#/components/schemas/ConfidenceSignals"
+        model_version:
+          type: string
+          description: "Versi Gemini model yang digunakan"
+        prompt_version:
+          type: string
+          description: "Versi prompt yang digunakan"
+        schema_version:
+          type: string
+          description: "Versi schema output JSON"
+        last_processed_at:
+          type: string
+          format: date-time
+        data_mode:
+          $ref: "#/components/schemas/DataMode"
+
+    LocationsResponse:
+      type: object
+      properties:
+        locations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Location"
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - database
+        - fixture_mode
+        - environment
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded, error]
+        database:
+          type: string
+          enum: [connected, disconnected]
+        gemini:
+          type: string
+          enum: [reachable, unreachable, not_checked]
+        fixture_mode:
+          type: boolean
+          description: "Selalu false di production. Jika true di production: startup failure."
+        environment:
+          type: string
+          enum: [production, staging, development, test]
+        version:
+          type: string
+          example: "0.1.0"
+        details:
+          type: string
+          nullable: true
+          description: "Pesan error jika status bukan ok"
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          example: "not_found"
+        message:
+          type: string
+          example: "Event tidak ditemukan"
+        details:
+          type: object
+          nullable: true

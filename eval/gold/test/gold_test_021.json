@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_021",
+  "article_id": "art_test_21",
+  "source_domain": "setkab.go.id",
+  "published_at": "2026-10-11T10:00:00Z",
+  "category": "government_and_public_policy",
+  "labels": {
+    "event_id": "evt_test_idn_subsidy",
+    "timeline_order": 1,
+    "location_canonical": "Jakarta Pusat, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_021",
+      "verbatim_quote": "Presiden Joko Widodo menandatangani Perpres Nomor 88 Tahun 2026 tentang Subsidi Tarif Transportasi Perkotaan Terpadu.",
+      "speaker": "Presiden RI",
+      "statement": "Presiden mengesahkan Perpres 88/2026 subsidi transportasi",
+      "stance": "support",
+      "canonical_event_id": "evt_test_idn_subsidy"
+    }
+  ]
+}

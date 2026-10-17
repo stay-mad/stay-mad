@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_015",
+  "article_id": "art_test_15",
+  "source_domain": "bnpb.go.id",
+  "published_at": "2026-10-11T08:00:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_test_jtg_merapi",
+    "timeline_order": 3,
+    "location_canonical": "Sleman, DI Yogyakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "ACTION_RECOMMENDED",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_015",
+      "verbatim_quote": "BNPB menegaskan aktivitas vulkanik Merapi Siaga Level III dengan batas zona bahaya 5 kilometer.",
+      "speaker": "BNPB",
+      "statement": "Batas bahaya Merapi ditetapkan radius 5 km",
+      "stance": "support",
+      "canonical_event_id": "evt_test_jtg_merapi"
+    }
+  ]
+}

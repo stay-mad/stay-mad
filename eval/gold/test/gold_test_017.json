@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_017",
+  "article_id": "art_test_17",
+  "source_domain": "republika.co.id",
+  "published_at": "2026-10-11T08:15:00Z",
+  "category": "transportation_and_infrastructure",
+  "labels": {
+    "event_id": "evt_test_jkt_krl",
+    "timeline_order": 2,
+    "location_canonical": "Jakarta Selatan, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "ACTION_RECOMMENDED",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_017",
+      "verbatim_quote": "KAI Commuter memotong pola perjalanan KRL relasi Bogor hanya sampai Stasiun Manggarai akibat perbaikan sinyal.",
+      "speaker": "KAI Commuter",
+      "statement": "Rute KRL Bogor dipotong hanya sampai Manggarai",
+      "stance": "support",
+      "canonical_event_id": "evt_test_jkt_krl"
+    }
+  ]
+}

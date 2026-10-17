@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_023",
+  "article_id": "art_test_23",
+  "source_domain": "republika.co.id",
+  "published_at": "2026-10-11T11:45:00Z",
+  "category": "government_and_public_policy",
+  "labels": {
+    "event_id": "evt_test_idn_subsidy",
+    "timeline_order": 3,
+    "location_canonical": "Jakarta Pusat, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": false,
+    "action_policy": "OPTIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_023",
+      "verbatim_quote": "Pemerintah memastikan skema subsidi transportasi berbasis NIK akan memprioritaskan masyarakat ekonomi menengah ke bawah.",
+      "speaker": "Kemenko",
+      "statement": "Subsidi transportasi berbasis NIK prioritaskan masyarakat berpenghasilan rendah",
+      "stance": "support",
+      "canonical_event_id": "evt_test_idn_subsidy"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_014",
+  "article_id": "art_test_14",
+  "source_domain": "news.detik.com",
+  "published_at": "2026-10-11T07:00:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_test_jtg_merapi",
+    "timeline_order": 2,
+    "location_canonical": "Sleman, DI Yogyakarta",
+    "has_conflict": true,
+    "expected_change": true,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_014",
+      "verbatim_quote": "Berdasarkan konfirmasi resmi BPPTKG, status aktivitas Merapi saat ini tetap berada pada Level III (Siaga).",
+      "speaker": "BPPTKG",
+      "statement": "Status Merapi dikonfirmasi tetap Level III Siaga",
+      "stance": "support",
+      "canonical_event_id": "evt_test_jtg_merapi"
+    }
+  ]
+}

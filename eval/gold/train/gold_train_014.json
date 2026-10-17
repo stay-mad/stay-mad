@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_train_014",
+  "article_id": "art_train_14",
+  "source_domain": "kompas.com",
+  "published_at": "2026-10-13T09:00:00Z",
+  "category": "transportation_and_infrastructure",
+  "labels": {
+    "event_id": "evt_jtg_pantura_2026_10",
+    "timeline_order": 2,
+    "location_canonical": "Demak, Jawa Tengah",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "ACTION_RECOMMENDED",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_train_014",
+      "verbatim_quote": "Satlantas Polres Demak memberlakukan rekayasa contraflow sepanjang dua kilometer imbas pembongkaran aspal jalan Pantura.",
+      "speaker": "Polres Demak",
+      "statement": "Contraflow 2 km diberlakukan di Jalur Pantura Demak",
+      "stance": "support",
+      "canonical_event_id": "evt_jtg_pantura_2026_10"
+    }
+  ]
+}

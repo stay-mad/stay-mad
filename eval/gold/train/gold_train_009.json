@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_train_009",
+  "article_id": "art_train_09",
+  "source_domain": "cnnindonesia.com",
+  "published_at": "2026-10-11T09:35:00Z",
+  "category": "transportation_and_infrastructure",
+  "labels": {
+    "event_id": "evt_jkt_krl_2026_10",
+    "timeline_order": 3,
+    "location_canonical": "Jakarta Selatan, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_train_009",
+      "verbatim_quote": "Perbaikan wesel dan sinyal Manggarai telah selesai pukul 09:30 WIB dan perjalanan kembali bertahap normal.",
+      "speaker": null,
+      "statement": "Perbaikan sinyal Manggarai selesai pukul 09:30 WIB",
+      "stance": "support",
+      "canonical_event_id": "evt_jkt_krl_2026_10"
+    }
+  ]
+}

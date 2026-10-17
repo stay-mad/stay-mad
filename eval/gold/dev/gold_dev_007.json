@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_dev_007",
+  "article_id": "art_dev_07",
+  "source_domain": "news.detik.com",
+  "published_at": "2026-10-10T10:00:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_isolated_injection_01",
+    "timeline_order": 0,
+    "location_canonical": "Jakarta Timur, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": false,
+    "action_policy": "NO_IMMEDIATE_ACTION",
+    "action_policy_violation": true
+  },
+  "claims": [
+    {
+      "claim_id": "clm_dev_007",
+      "verbatim_quote": "Lalu lintas di jalan bypass Jakarta terpantau padat merayap siang ini.",
+      "speaker": null,
+      "statement": "Lalu lintas jalan bypass Jakarta terpantau padat",
+      "stance": "neutral",
+      "canonical_event_id": "evt_isolated_injection_01"
+    }
+  ]
+}

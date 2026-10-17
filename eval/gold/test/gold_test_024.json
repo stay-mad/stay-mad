@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_024",
+  "article_id": "art_test_24",
+  "source_domain": "bnpb.go.id",
+  "published_at": "2026-10-12T09:00:00Z",
+  "category": "government_and_public_policy",
+  "labels": {
+    "event_id": "evt_test_diy_darurat",
+    "timeline_order": 1,
+    "location_canonical": "Yogyakarta, DI Yogyakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "ACTION_REQUIRED",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_024",
+      "verbatim_quote": "Gubernur DIY menetapkan Keputusan Gubernur Nomor 102/2026 mengenai Status Tanggap Darurat Bencana Vulkanik selama 14 hari.",
+      "speaker": "Gubernur DIY",
+      "statement": "Status Tanggap Darurat Bencana Vulkanik ditetapkan 14 hari di DIY",
+      "stance": "support",
+      "canonical_event_id": "evt_test_diy_darurat"
+    }
+  ]
+}

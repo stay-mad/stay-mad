@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_train_010",
+  "article_id": "art_train_10",
+  "source_domain": "setkab.go.id",
+  "published_at": "2026-10-11T10:00:00Z",
+  "category": "government_and_public_policy",
+  "labels": {
+    "event_id": "evt_idn_trans_subsidy_2026_10",
+    "timeline_order": 1,
+    "location_canonical": "Jakarta Pusat, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_train_010",
+      "verbatim_quote": "Presiden menandatangani Perpres 88/2026 tentang integrasi tarif dan skema subsidi angkutan umum terpadu perkotaan.",
+      "speaker": "Setkab",
+      "statement": "Perpres 88/2026 tentang subsidi transportasi terpadu resmi ditandatangani",
+      "stance": "support",
+      "canonical_event_id": "evt_idn_trans_subsidy_2026_10"
+    }
+  ]
+}

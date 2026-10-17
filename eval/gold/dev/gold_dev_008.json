@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_dev_008",
+  "article_id": "art_dev_08",
+  "source_domain": "antaranews.com",
+  "published_at": "2026-10-11T05:30:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_jtg_merapi_2026_10",
+    "timeline_order": 1,
+    "location_canonical": "Sleman, DI Yogyakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_dev_008",
+      "verbatim_quote": "Gunung Merapi di perbatasan DIY dan Jawa Tengah meluncurkan awan panas guguran dengan jarak luncur maksimum 1.500 meter ke arah barat daya.",
+      "speaker": "BPPTKG",
+      "statement": "Awan panas Merapi meluncur sejauh 1.500 meter",
+      "stance": "support",
+      "canonical_event_id": "evt_jtg_merapi_2026_10"
+    }
+  ]
+}

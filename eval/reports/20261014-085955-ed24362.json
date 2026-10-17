@@ -1,0 +1,77 @@
+{
+  "report_id": "eval_fe70d23f",
+  "dataset_version": "gold-dev-v1.0",
+  "code_commit": "ed24362f54d2f6f714389a83e3387e2cd6109f53",
+  "model_version": "mock-deterministic-v1",
+  "prompt_version": "v1.0 | adjudicate-v1.1 | synthesize-v1.3",
+  "schema_version": "1.0",
+  "run_timestamp": "2026-10-14T08:59:55.411001+00:00",
+  "processing_run_id": "0928759c-5fc4-499c-9285-a0edc682b053",
+  "ablation_tier": "TIER3",
+  "split": "dev",
+  "raw_counts": {
+    "articles_processed": 20,
+    "events_labeled": 8,
+    "clusters_produced": 11,
+    "timeline_entries": 35,
+    "conflicts_detected": 5,
+    "actions_generated": 11
+  },
+  "failures": {
+    "extraction_failures": 0,
+    "adjudication_failures": 0,
+    "synthesis_failures": 0
+  },
+  "latency": {
+    "p50_ms": 49,
+    "p95_ms": 111,
+    "p99_ms": 124,
+    "total_ms": 124
+  },
+  "cost_estimate_usd": 0.01,
+  "metrics": {
+    "clustering": {
+      "pairwise_precision": 1.0,
+      "pairwise_recall": 0.6087,
+      "pairwise_f1": 0.7568,
+      "b3_precision": 1.0,
+      "b3_recall": 0.7783,
+      "b3_f1": 0.8754
+    },
+    "timeline": {
+      "ordering_precision": 0.5782,
+      "ordering_recall": 1.0,
+      "ordering_f1": 0.7328,
+      "timestamp_coverage": 0.2286,
+      "qualifier_preservation": 1.0
+    },
+    "location": {
+      "city_accuracy": 0.5,
+      "province_accuracy": 0.85,
+      "hierarchical_f1": 0.6296
+    },
+    "attribution": {
+      "grounded_coverage": 1.0,
+      "unsupported_rate": 0.0,
+      "source_attribution_accuracy": 1.0
+    },
+    "conflict": {
+      "precision": 0.5,
+      "recall": 0.6667,
+      "f1": 0.5714,
+      "tp": 2,
+      "fp": 2,
+      "fn": 1,
+      "tn": 15
+    },
+    "change": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "no_change_specificity": 1.0
+    },
+    "safety": {
+      "unsupported_action_rate": 0.0,
+      "injection_failure_rate": 0.0
+    }
+  }
+}

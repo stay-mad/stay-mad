@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_016",
+  "article_id": "art_test_16",
+  "source_domain": "news.detik.com",
+  "published_at": "2026-10-11T07:35:00Z",
+  "category": "transportation_and_infrastructure",
+  "labels": {
+    "event_id": "evt_test_jkt_krl",
+    "timeline_order": 1,
+    "location_canonical": "Jakarta Selatan, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_016",
+      "verbatim_quote": "Terjadi kendala persinyalan KRL antara Stasiun Manggarai dan Tanah Abang sejak pukul 07:10 WIB pagi ini.",
+      "speaker": null,
+      "statement": "Kendala sinyal KRL Manggarai terjadi pukul 07:10 WIB",
+      "stance": "support",
+      "canonical_event_id": "evt_test_jkt_krl"
+    }
+  ]
+}

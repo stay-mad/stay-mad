@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* DESIGN.md Tokens — Terang */
+    --bg: #F5F3EE;         /* Latar halaman */
+    --surface: #FBFAF7;    /* Kartu, panel, input */
+    --tint: #EFECE4;       /* Latar seksi tipis, utility bar, track bar */
+    --ink: #1D1B18;        /* Teks utama, border tegas 1.5px, aturan tebal */
+    --ink2: #5E5A52;       /* Teks sekunder, meta */
+    --line: #DAD5CA;       /* Pemisah internal 1px */
+    --hover: #E8E4D9;      /* Hover */
+    --accent: #25594A;     /* Satu-satunya aksen: link, bar keyakinan, tab aktif */
+    --warn: #8E5F14;       /* Dampak tinggi, peringatan konflik */
+    --warnbg: #F4EAD3;     /* Latar badge warn */
+    --danger: #8C2F2A;     /* Banner darurat otoritas dan status ralat */
+    --dangerbg: #F3DFDC;   /* Latar banner darurat */
+
+    /* Aliases for backwards compatibility with existing UI components */
+    --bg-canvas: var(--bg);
+    --bg-surface: var(--surface);
+    --bg-subtle: var(--tint);
+    --border-subtle: var(--line);
+    --border-strong: var(--ink);
+    --text-primary: var(--ink);
+    --text-secondary: var(--ink2);
+    --text-muted: var(--ink2);
+    --accent-primary: var(--accent);
+  }
+
+  /* DESIGN.md Tokens — Gelap */
+  .dark {
+    --bg: #1E1C19;
+    --surface: #262320;
+    --tint: #2B2723;
+    --ink: #ECE8E0;
+    --ink2: #A59F94;
+    --line: #3F3A34;
+    --hover: #322D28;
+    --accent: #86BBA7;
+    --warn: #D4A24C;
+    --warnbg: #3A2F1B;
+    --danger: #E08A82;
+    --dangerbg: #3A2220;
+
+    --bg-canvas: var(--bg);
+    --bg-surface: var(--surface);
+    --bg-subtle: var(--tint);
+    --border-subtle: var(--line);
+    --border-strong: var(--ink);
+    --text-primary: var(--ink);
+    --text-secondary: var(--ink2);
+    --text-muted: var(--ink2);
+    --accent-primary: var(--accent);
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-editorial-sans), system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, .font-serif, .font-serif-editorial {
+    font-family: var(--font-editorial-serif), Georgia, Cambria, "Times New Roman", serif;
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-editorial-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+}
+
+/* Minimalist Editorial Utilities */
+.hairline-border {
+  border: 1px solid var(--line);
+}
+
+.hairline-divider {
+  border-color: var(--line);
+}
+
+/* Restrained Editorial Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink2);
+}

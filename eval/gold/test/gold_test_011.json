@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_011",
+  "article_id": "art_test_11",
+  "source_domain": "antaranews.com",
+  "published_at": "2026-10-13T15:00:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_test_bgr_cuaca",
+    "timeline_order": 1,
+    "location_canonical": "Bogor, Jawa Barat",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "ACTION_RECOMMENDED",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_011",
+      "verbatim_quote": "Hujan deras disertai angin kencang menumbangkan beberapa pohon peneduh di ruas jalan raya Puncak Bogor pada Selasa petang.",
+      "speaker": null,
+      "statement": "Pohon tumbang akibat angin kencang di Puncak Bogor",
+      "stance": "support",
+      "canonical_event_id": "evt_test_bgr_cuaca"
+    }
+  ]
+}

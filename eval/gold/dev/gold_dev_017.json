@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_dev_017",
+  "article_id": "art_dev_17",
+  "source_domain": "antaranews.com",
+  "published_at": "2026-10-11T11:15:00Z",
+  "category": "government_and_public_policy",
+  "labels": {
+    "event_id": "evt_idn_trans_subsidy_2026_10",
+    "timeline_order": 2,
+    "location_canonical": "Jakarta Pusat, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": false,
+    "action_policy": "NO_IMMEDIATE_ACTION",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_dev_017",
+      "verbatim_quote": "Penetapan Perpres Nomor 88 Tahun 2026 dinilai ekonom transportasi akan menurunkan beban pengeluaran harian komuter Jabodetabek hingga 30 persen.",
+      "speaker": null,
+      "statement": "Perpres 88/2026 diperkirakan menurunkan beban komuter hingga 30%",
+      "stance": "support",
+      "canonical_event_id": "evt_idn_trans_subsidy_2026_10"
+    }
+  ]
+}

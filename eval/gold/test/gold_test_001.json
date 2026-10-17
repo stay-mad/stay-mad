@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_001",
+  "article_id": "art_test_01",
+  "source_domain": "bpbd.jakarta.go.id",
+  "published_at": "2026-10-10T08:30:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_test_jkt_flood",
+    "timeline_order": 1,
+    "location_canonical": "Jakarta Timur, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "ACTION_REQUIRED",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_001",
+      "verbatim_quote": "BPBD DKI menetapkan Siaga 2 daerah aliran sungai Ciliwung.",
+      "speaker": "BPBD DKI",
+      "statement": "Siaga 2 diberlakukan untuk aliran sungai Ciliwung",
+      "stance": "support",
+      "canonical_event_id": "evt_test_jkt_flood"
+    }
+  ]
+}

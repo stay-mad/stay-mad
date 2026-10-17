@@ -1,0 +1,127 @@
+# Sources Allowlist Configuration
+# Sesuai docs/sources.md
+
+sources:
+  - id: "src_bmkg_data"
+    domain: "data.bmkg.go.id"
+    name: "BMKG (Data Terbuka)"
+    type: "API"
+    url: "https://data.bmkg.go.id/DataMKG/TEWS/autogempa.json"
+    tier: 1
+    source_family: "GOV_BMKG"
+    rate_limit_per_min: 60
+    allow_crawler: true
+    retention_days_full_text: 365
+
+  - id: "src_bpbd_dki"
+    domain: "bpbd.jakarta.go.id"
+    name: "BPBD DKI Jakarta"
+    type: "RESMI"
+    url: "https://bpbd.jakarta.go.id/berita"
+    tier: 1
+    source_family: "GOV_BPBD_DKI"
+    rate_limit_per_min: 20
+    allow_crawler: true
+    retention_days_full_text: 30
+
+  - id: "src_bnpb"
+    domain: "bnpb.go.id"
+    name: "BNPB Indonesia"
+    type: "RESMI"
+    url: "https://bnpb.go.id/berita"
+    tier: 1
+    source_family: "GOV_BNPB"
+    rate_limit_per_min: 15
+    allow_crawler: true
+    retention_days_full_text: 30
+
+  - id: "src_setkab"
+    domain: "setkab.go.id"
+    name: "Sekretariat Kabinet RI"
+    type: "RESMI"
+    url: "https://setkab.go.id/berita"
+    tier: 1
+    source_family: "GOV_SETKAB"
+    rate_limit_per_min: 20
+    allow_crawler: true
+    retention_days_full_text: 30
+
+  - id: "src_antara"
+    domain: "antaranews.com"
+    name: "LKBN ANTARA"
+    type: "RSS"
+    url: "https://www.antaranews.com/rss/terkini.xml"
+    tier: 1
+    source_family: "LKBN_ANTARA"
+    rate_limit_per_min: 30
+    allow_crawler: true
+    retention_days_full_text: 7
+
+  - id: "src_cnn_id"
+    domain: "cnnindonesia.com"
+    name: "CNN Indonesia"
+    type: "RSS"
+    url: "https://www.cnnindonesia.com/nasional/rss"
+    tier: 2
+    source_family: "TRANSMEDIA"
+    rate_limit_per_min: 20
+    allow_crawler: true
+    retention_days_full_text: 7
+
+  - id: "src_detik"
+    domain: "news.detik.com"
+    name: "Detikcom"
+    type: "RSS"
+    url: "https://news.detik.com/berita/rss"
+    tier: 2
+    source_family: "TRANSMEDIA"
+    rate_limit_per_min: 20
+    allow_crawler: true
+    retention_days_full_text: 7
+
+  - id: "src_republika"
+    domain: "republika.co.id"
+    name: "Republika"
+    type: "RSS"
+    url: "https://republika.co.id/rss"
+    tier: 2
+    source_family: "MAHAKA_MEDIA"
+    rate_limit_per_min: 20
+    allow_crawler: true
+    retention_days_full_text: 7
+
+  # C-2 Fix: Sumber tambahan per ADR-006 & docs/sources.md
+  # Mapping tier: tier: 1 -> TIER_1 (Official/Wire), tier: 2 -> TIER_2 (Commercial)
+  - id: "src_tempo"
+    domain: "tempo.co"
+    name: "Tempo.co"
+    type: "RSS"
+    url: "https://rss.tempo.co/nasional"
+    tier: 2
+    source_family: "TEMPO_INTI_MEDIA"
+    rate_limit_per_min: 20
+    allow_crawler: true
+    retention_days_full_text: 7
+
+  - id: "src_kompas"
+    domain: "kompas.com"
+    name: "Kompas.com"
+    type: "RSS"
+    url: "https://news.kompas.com/rss"
+    tier: 1
+    source_family: "KOMPAS_GRAMEDIA"
+    rate_limit_per_min: 20
+    allow_crawler: true
+    retention_days_full_text: 7
+
+  - id: "src_cnbc_id"
+    domain: "cnbcindonesia.com"
+    name: "CNBC Indonesia"
+    type: "RSS"
+    url: "https://www.cnbcindonesia.com/news/rss"
+    tier: 2
+    source_family: "TRANSMEDIA"
+    rate_limit_per_min: 20
+    allow_crawler: true
+    retention_days_full_text: 7
+

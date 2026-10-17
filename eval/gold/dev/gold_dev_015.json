@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_dev_015",
+  "article_id": "art_dev_15",
+  "source_domain": "cnnindonesia.com",
+  "published_at": "2026-10-12T15:00:00Z",
+  "category": "transportation_and_infrastructure",
+  "labels": {
+    "event_id": "evt_jkt_mrt_2026_10",
+    "timeline_order": 2,
+    "location_canonical": "Jakarta Pusat, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_dev_015",
+      "verbatim_quote": "Manajemen MRT Jakarta memastikan operasional seluruh stasiun bawah tanah kembali beroperasi normal setelah tim teknis menstabilkan pasokan tegangan listrik.",
+      "speaker": "MRT Jakarta",
+      "statement": "Operasional MRT Bundaran HI kembali normal",
+      "stance": "support",
+      "canonical_event_id": "evt_jkt_mrt_2026_10"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_007",
+  "article_id": "art_test_07",
+  "source_domain": "data.bmkg.go.id",
+  "published_at": "2026-10-14T06:10:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_test_diy_gempa",
+    "timeline_order": 1,
+    "location_canonical": "Bantul, DI Yogyakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "ACTION_RECOMMENDED",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_007",
+      "verbatim_quote": "BMKG merilis gempa bumi tektonik berkekuatan Magnitudo 5.2 mengguncang wilayah barat daya Bantul DIY pada kedalaman 18 kilometer.",
+      "speaker": "BMKG",
+      "statement": "Gempa M 5.2 guncang barat daya Bantul kedalaman 18 km",
+      "stance": "support",
+      "canonical_event_id": "evt_test_diy_gempa"
+    }
+  ]
+}

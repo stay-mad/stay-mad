@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_train_002",
+  "article_id": "art_train_02",
+  "source_domain": "news.detik.com",
+  "published_at": "2026-10-10T09:20:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_jakarta_flood_2026_10",
+    "timeline_order": 3,
+    "location_canonical": "Jakarta Timur, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": false,
+    "action_policy": "NO_IMMEDIATE_ACTION",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_train_002",
+      "verbatim_quote": "Ketinggian air terpantau mencapai 70 cm di permukiman padat warga.",
+      "speaker": null,
+      "statement": "Ketinggian air mencapai 70 cm di Kampung Melayu",
+      "stance": "support",
+      "canonical_event_id": "evt_jakarta_flood_2026_10"
+    }
+  ]
+}

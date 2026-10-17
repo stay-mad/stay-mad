@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_003",
+  "article_id": "art_test_03",
+  "source_domain": "republika.co.id",
+  "published_at": "2026-10-10T09:15:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_test_jkt_flood",
+    "timeline_order": 3,
+    "location_canonical": "Jakarta Timur, DKI Jakarta",
+    "has_conflict": true,
+    "expected_change": true,
+    "action_policy": "NO_IMMEDIATE_ACTION",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_003",
+      "verbatim_quote": "Keterangan relawan warga mencatat banjir akibat luapan Ciliwung telah merendam 7 kecamatan di Jakarta Timur pada Sabtu pagi.",
+      "speaker": "Warga",
+      "statement": "Warga mencatat 7 kecamatan terendam banjir Ciliwung",
+      "stance": "support",
+      "canonical_event_id": "evt_test_jkt_flood"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_dev_016",
+  "article_id": "art_dev_16",
+  "source_domain": "setkab.go.id",
+  "published_at": "2026-10-11T10:00:00Z",
+  "category": "government_and_public_policy",
+  "labels": {
+    "event_id": "evt_idn_trans_subsidy_2026_10",
+    "timeline_order": 1,
+    "location_canonical": "Jakarta Pusat, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_dev_016",
+      "verbatim_quote": "Presiden Joko Widodo menandatangani Peraturan Presiden (Perpres) Nomor 88 Tahun 2026 tentang Skema Baru Subsidi dan Integrasi Tarif Transportasi Perkotaan Terpadu.",
+      "speaker": "Presiden RI",
+      "statement": "Perpres 88/2026 tentang Subsidi Transportasi resmi diteken",
+      "stance": "support",
+      "canonical_event_id": "evt_idn_trans_subsidy_2026_10"
+    }
+  ]
+}

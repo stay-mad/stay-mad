@@ -1,0 +1,44 @@
+# Resolver Configuration
+# Authority: docs/architecture/D-event-resolution-algorithm.md (§53-D), ADR-005
+# V-3 fix (2026-10-12): model_name dan vector_dimension dikoreksi ke Google API.
+
+entity_resolution:
+  # UNCALIBRATED — update after Stage 04 dev-set evaluation per ADR-005.
+  similarity_threshold: 0.85
+  vector_dimension: 768                          # Google text-multilingual-embedding-002
+  model_name: "text-multilingual-embedding-002"  # Google Generative AI (ADR-007, DEC-0008)
+  canonical_matching:
+    # UNCALIBRATED — tune against labeled dev set before Stage 05.
+    fuzzy_ratio_min: 80
+    enforce_alias_dictionary: true
+
+event_resolution:
+  # UNCALIBRATED — update after Stage 04 dev-set evaluation per ADR-005.
+  time_window_hours: 72
+  # UNCALIBRATED — min_co_occurring_claims may be too loose or too strict
+  # for actual article volume. Validate against dev set after Stage 04.
+  min_co_occurring_claims: 2
+
+resolver:
+  hard:
+    time_incompatible_hours: 72
+    location_incompatible_km: null
+    strict_category: true
+    type_exclusion_rules: []
+  embedding:
+    top_k: 10
+    min_cosine: 0.20
+    model_name: "text-multilingual-embedding-002"
+    vector_dimension: 768
+  scoring:
+    w_semantic: 0.40
+    w_time: 0.30
+    w_location: 0.20
+    w_entity: 0.10
+    time_decay_hours: 48
+  thresholds:
+    low: 0.35   # score < low -> SEPARATE_EVENT tanpa Gemini
+    high: 0.75  # score > high -> SAME_EVENT tanpa Gemini
+  adjudication:
+    max_candidates_per_call: 5
+    needs_review_confidence_cutoff: 0.60

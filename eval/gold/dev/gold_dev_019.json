@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_dev_019",
+  "article_id": "art_dev_19",
+  "source_domain": "antaranews.com",
+  "published_at": "2026-10-11T13:00:00Z",
+  "category": "government_and_public_policy",
+  "labels": {
+    "event_id": "evt_idn_trans_subsidy_2026_10",
+    "timeline_order": 4,
+    "location_canonical": "Jakarta Pusat, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": false,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_dev_019",
+      "verbatim_quote": "Sidang Kabinet Paripurna di Istana Negara membahas dua agenda krusial nasional.",
+      "speaker": "Setkab",
+      "statement": "Sidang Kabinet membahas subsidi transportasi dan mitigasi bencana",
+      "stance": "support",
+      "canonical_event_id": "evt_idn_trans_subsidy_2026_10"
+    }
+  ]
+}

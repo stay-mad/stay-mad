@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://staymad.internal/eval/gold/schema.json",
+  "title": "Stay Mad Gold Evaluation Set Schema",
+  "description": "Schema validasi untuk gold evaluation dataset (ADR-008, §53-I, Temuan A-5)",
+  "type": "object",
+  "required": [
+    "sample_id",
+    "article_id",
+    "source_domain",
+    "published_at",
+    "category",
+    "labels"
+  ],
+  "properties": {
+    "sample_id": {
+      "type": "string",
+      "description": "ID unik sampel anotasi gold"
+    },
+    "article_id": {
+      "type": "string",
+      "description": "ID artikel referensi"
+    },
+    "source_domain": {
+      "type": "string",
+      "description": "Domain sumber berita/feed"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "disaster_and_weather",
+        "transportation_and_infrastructure",
+        "government_and_public_policy"
+      ]
+    },
+    "labels": {
+      "type": "object",
+      "description": "Protokol anotasi 6 field + validasi kebijakan aksi (ADR-008 §3, Temuan A-5)",
+      "required": [
+        "event_id",
+        "timeline_order",
+        "location_canonical",
+        "has_conflict",
+        "expected_change",
+        "action_policy",
+        "action_policy_violation"
+      ],
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "description": "Ground truth event ID untuk klasterisasi"
+        },
+        "timeline_order": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Urutan kronologis yang diharapkan pada timeline"
+        },
+        "location_canonical": {
+          "type": "string",
+          "description": "Nama lokasi kanonikal yang diharapkan"
+        },
+        "has_conflict": {
+          "type": "boolean",
+          "description": "True jika artikel mengandung klaim faktual yang berkonflik dengan klaim lain"
+        },
+        "expected_change": {
+          "type": "boolean",
+          "description": "True jika update ini diharapkan memicu EventChange terstruktur"
+        },
+        "action_policy": {
+          "type": "string",
+          "enum": [
+            "ACTION_REQUIRED",
+            "ACTION_RECOMMENDED",
+            "OPTIONAL",
+            "INFORMATIONAL",
+            "NO_IMMEDIATE_ACTION"
+          ],
+          "description": "Level aksi yang diharapkan sesuai kebijakan ADR-006"
+        },
+        "action_policy_violation": {
+          "type": "boolean",
+          "description": "True jika artikel/klaim melanggar kebijakan aksi (mis. memuat aksi REQUIRED tanpa sumber resmi)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "claim_id",
+          "verbatim_quote",
+          "statement",
+          "canonical_event_id"
+        ],
+        "properties": {
+          "claim_id": {
+            "type": "string"
+          },
+          "verbatim_quote": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Kutipan verbatim persis dari teks sumber (< 200 karakter)"
+          },
+          "speaker": {
+            "type": ["string", "null"]
+          },
+          "statement": {
+            "type": "string"
+          },
+          "stance": {
+            "type": "string",
+            "enum": ["support", "deny", "neutral"]
+          },
+          "canonical_event_id": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

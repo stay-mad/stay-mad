@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_dev_018",
+  "article_id": "art_dev_18",
+  "source_domain": "republika.co.id",
+  "published_at": "2026-10-11T11:45:00Z",
+  "category": "government_and_public_policy",
+  "labels": {
+    "event_id": "evt_idn_trans_subsidy_2026_10",
+    "timeline_order": 3,
+    "location_canonical": "Jakarta Pusat, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": false,
+    "action_policy": "OPTIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_dev_018",
+      "verbatim_quote": "Juru Bicara Kementerian Koordinator menyatakan integrasi sistem pembayaran tarif bersubsidi Perpres 88/2026 akan diuji coba terlebih dahulu di wilayah aglomerasi Jabodetabek mulai awal bulan depan.",
+      "speaker": "Kemenko",
+      "statement": "Uji coba subsidi tarif dimulai awal bulan depan di Jabodetabek",
+      "stance": "support",
+      "canonical_event_id": "evt_idn_trans_subsidy_2026_10"
+    }
+  ]
+}

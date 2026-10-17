@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_019",
+  "article_id": "art_test_19",
+  "source_domain": "antaranews.com",
+  "published_at": "2026-10-10T10:00:00Z",
+  "category": "transportation_and_infrastructure",
+  "labels": {
+    "event_id": "evt_test_pln_gandul",
+    "timeline_order": 1,
+    "location_canonical": "Depok, Jawa Barat",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_019",
+      "verbatim_quote": "PLN Distribusi Jawa Barat melaksanakan pemeliharaan sistem transmisi 500 kV Gardu Induk Gandul pada Sabtu siang.",
+      "speaker": "PLN",
+      "statement": "Pemeliharaan transmisi 500 kV Gardu Induk Gandul dilaksanakan",
+      "stance": "support",
+      "canonical_event_id": "evt_test_pln_gandul"
+    }
+  ]
+}

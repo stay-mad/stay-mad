@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_dev_003",
+  "article_id": "art_dev_03",
+  "source_domain": "republika.co.id",
+  "published_at": "2026-10-10T09:15:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_jakarta_flood_2026_10",
+    "timeline_order": 3,
+    "location_canonical": "Jakarta Timur, DKI Jakarta",
+    "has_conflict": true,
+    "expected_change": true,
+    "action_policy": "NO_IMMEDIATE_ACTION",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_dev_003",
+      "verbatim_quote": "Relawan lapangan melaporkan genangan banjir telah merendam 7 kecamatan di wilayah Jakarta Timur.",
+      "speaker": "Relawan Lapangan",
+      "statement": "Banjir dilaporkan merendam 7 kecamatan di Jakarta Timur",
+      "stance": "support",
+      "canonical_event_id": "evt_jakarta_flood_2026_10"
+    }
+  ]
+}

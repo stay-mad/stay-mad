@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_005",
+  "article_id": "art_test_05",
+  "source_domain": "bpbd.jakarta.go.id",
+  "published_at": "2026-10-10T11:00:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_test_jkt_flood",
+    "timeline_order": 4,
+    "location_canonical": "Jakarta Timur, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "ACTION_REQUIRED",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_005",
+      "verbatim_quote": "BPBD DKI merilis laporan resmi pukul 11:00 WIB: total terverifikasi 6 kecamatan terdampak genangan luapan Kali Ciliwung.",
+      "speaker": "BPBD DKI",
+      "statement": "Laporan resmi memverifikasi 6 kecamatan terdampak",
+      "stance": "support",
+      "canonical_event_id": "evt_test_jkt_flood"
+    }
+  ]
+}

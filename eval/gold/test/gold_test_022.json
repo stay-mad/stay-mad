@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_022",
+  "article_id": "art_test_22",
+  "source_domain": "antaranews.com",
+  "published_at": "2026-10-11T11:15:00Z",
+  "category": "government_and_public_policy",
+  "labels": {
+    "event_id": "evt_test_idn_subsidy",
+    "timeline_order": 2,
+    "location_canonical": "Jakarta Pusat, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": false,
+    "action_policy": "NO_IMMEDIATE_ACTION",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_022",
+      "verbatim_quote": "Kementerian Perhubungan menyiapkan petunjuk teknis pelaksanaan subsidi tiket silang antar moda transportasi Jabodetabek.",
+      "speaker": "Kemenhub",
+      "statement": "Kemenhub susun juknis subsidi tiket silang antar moda",
+      "stance": "support",
+      "canonical_event_id": "evt_test_idn_subsidy"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+# Confidence Scoring Algorithm Configuration
+# Authority: docs/architecture/F-confidence-algorithm.md (§53-F), ADR-004 (Opsi A), DEC-0008
+# Single source of truth: config/confidence.yaml (per Addendum §9)
+#
+# Formula:
+#   confidence_score = w_source_quality        * source_quality_score
+#                    + w_corroboration         * corroboration_score
+#                    + w_claim_consistency     * claim_consistency_score
+#                    + w_official_confirmation * official_confirmation_score
+#                    + w_temporal_consistency  * temporal_consistency_score
+#
+# NOTE: geographic_consistency was excluded from the weighted formula per DEC-0008.
+# DEC-0008 decision: use 5-component formula from §53-F as authoritative.
+# Master Spec §19 lists 6 factors; "verbatim_quote_match" and "recency_decay"
+# from old config are NOT confidence components:
+#   - verbatim_quote_match → used as extraction validation gate (Stage 03)
+#   - recency_decay        → captured in urgency_score (config/importance.yaml)
+
+weights:
+  source_quality: 0.30          # kualitas & tier sumber terkuat
+  corroboration: 0.25           # jumlah source_family unik (anti-inflation)
+  claim_consistency: 0.20       # rasio klaim tidak berkonflik
+  official_confirmation: 0.15   # ada/tidak sumber GOV_* Tier 1
+  temporal_consistency: 0.10    # proporsi klaim temporal berhasil dinormalisasi
+
+# UNCALIBRATED — starting estimate. Update after Stage 04 gold-set evaluation per ADR-004.
+thresholds:
+  high: 0.70    # confidence_score >= 0.70 → bucket HIGH
+  medium: 0.45  # 0.45 <= score < 0.70  → bucket MEDIUM
+                # score < 0.45          → bucket LOW
+  flag_for_human_review: 0.40  # score < 0.40 → flag ke human review queue
+
+# Corroboration normalization constant
+# UNCALIBRATED — adjust after Stage 04 evaluation.
+corroboration_max_families: 4
+
+# evidence_status and verification_level derivation table — see ADR-004 §Mapping Table
+# These fields are DERIVED from components above, not from confidence_score directly.
+# See docs/architecture/F-confidence-algorithm.md §4 for derivation logic.

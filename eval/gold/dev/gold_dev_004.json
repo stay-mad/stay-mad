@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_dev_004",
+  "article_id": "art_dev_04",
+  "source_domain": "news.detik.com",
+  "published_at": "2026-10-10T09:00:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_jakarta_flood_2026_10",
+    "timeline_order": 2,
+    "location_canonical": "Jakarta Timur, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": false,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_dev_004",
+      "verbatim_quote": "Sebanyak lima kecamatan di Jakarta Timur terdampak genangan dengan ketinggian 40 hingga 80 cm mulai pukul 08:00 WIB.",
+      "speaker": null,
+      "statement": "Lima kecamatan di Jaktim tergenang 40-80 cm",
+      "stance": "support",
+      "canonical_event_id": "evt_jakarta_flood_2026_10"
+    }
+  ]
+}

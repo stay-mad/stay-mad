@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_dev_011",
+  "article_id": "art_dev_11",
+  "source_domain": "news.detik.com",
+  "published_at": "2026-10-11T07:35:00Z",
+  "category": "transportation_and_infrastructure",
+  "labels": {
+    "event_id": "evt_jkt_krl_2026_10",
+    "timeline_order": 1,
+    "location_canonical": "Jakarta Selatan, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_dev_011",
+      "verbatim_quote": "Gangguan persinyalan terjadi pada lintas KRL Commuter Line antara Stasiun Manggarai dan Stasiun Tanah Abang pada pagi tadi sekitar pukul 07:10 WIB.",
+      "speaker": null,
+      "statement": "Gangguan sinyal KRL Manggarai terjadi pukul 07:10 WIB",
+      "stance": "support",
+      "canonical_event_id": "evt_jkt_krl_2026_10"
+    }
+  ]
+}

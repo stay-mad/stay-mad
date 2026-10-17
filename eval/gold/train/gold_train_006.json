@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_train_006",
+  "article_id": "art_train_06",
+  "source_domain": "republika.co.id",
+  "published_at": "2026-10-11T07:30:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_jtg_merapi_2026_10",
+    "timeline_order": 3,
+    "location_canonical": "Sleman, DI Yogyakarta",
+    "has_conflict": false,
+    "expected_change": false,
+    "action_policy": "OPTIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_train_006",
+      "verbatim_quote": "Warga dusun lereng Merapi bersiap evakuasi mandiri menyusul suara gemuruh terus menerus dari puncak.",
+      "speaker": null,
+      "statement": "Warga lereng Merapi bersiap evakuasi mandiri",
+      "stance": "support",
+      "canonical_event_id": "evt_jtg_merapi_2026_10"
+    }
+  ]
+}

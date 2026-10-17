@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_025",
+  "article_id": "art_test_25",
+  "source_domain": "antaranews.com",
+  "published_at": "2026-10-11T13:00:00Z",
+  "category": "government_and_public_policy",
+  "labels": {
+    "event_id": "evt_test_idn_subsidy",
+    "timeline_order": 4,
+    "location_canonical": "Jakarta Pusat, DKI Jakarta",
+    "has_conflict": false,
+    "expected_change": false,
+    "action_policy": "INFORMATIONAL",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_025",
+      "verbatim_quote": "Rapat Terbatas di Istana Negara membahas implementasi Perpres 88/2026 tentang subsidi transportasi terpadu serta langkah kesiapsiagaan menghadapi luapan sungai di Jabodetabek.",
+      "speaker": "Setkab",
+      "statement": "Rapat Istana bahas subsidi transportasi dan antisipasi banjir",
+      "stance": "support",
+      "canonical_event_id": "evt_test_idn_subsidy"
+    }
+  ]
+}

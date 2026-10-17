@@ -1,0 +1,26 @@
+{
+  "sample_id": "gold_test_009",
+  "article_id": "art_test_09",
+  "source_domain": "bnpb.go.id",
+  "published_at": "2026-10-12T16:00:00Z",
+  "category": "disaster_and_weather",
+  "labels": {
+    "event_id": "evt_test_jbr_longsor",
+    "timeline_order": 1,
+    "location_canonical": "Sumedang, Jawa Barat",
+    "has_conflict": false,
+    "expected_change": true,
+    "action_policy": "ACTION_RECOMMENDED",
+    "action_policy_violation": false
+  },
+  "claims": [
+    {
+      "claim_id": "clm_test_009",
+      "verbatim_quote": "BNPB melaporkan tebing setinggi 15 meter longsor menutupi badan jalan penghubung antardesa di Cadas Pangeran Sumedang akibat hujan lebat.",
+      "speaker": "BNPB",
+      "statement": "Longsor tebing 15 meter tutup jalan di Sumedang",
+      "stance": "support",
+      "canonical_event_id": "evt_test_jbr_longsor"
+    }
+  ]
+}
