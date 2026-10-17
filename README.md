@@ -52,27 +52,27 @@ flowchart TD
     end
 
     subgraph RESOLUTION ["3. 3-Tier Hybrid Event Resolver"]
-        Claims --> T1[Tier 1: Deterministic Constraints\nTime Window <= 72h, Geo Hierarchy]
-        T1 --> T2[Tier 2: pgvector 768-dim Embedding Retrieval\ntext-multilingual-embedding-002]
-        T2 --> Ambiguous{Composite Score\nin [0.45, 0.75]?}
-        Ambiguous -- Yes --> T3[Tier 3: Gemini LLM Adjudication\nAdjudication Rationale & Split Detection]
-        Ambiguous -- No --> Clustered[Canonical Event Clustered]
+        Claims --> T1["Tier 1: Deterministic Constraints<br/>Time Window <= 72h, Geo Hierarchy"]
+        T1 --> T2["Tier 2: pgvector 768-dim Embedding Retrieval<br/>text-multilingual-embedding-002"]
+        T2 --> Ambiguous{"Composite Score<br/>between 0.45 and 0.75?"}
+        Ambiguous -- Yes --> T3["Tier 3: Gemini LLM Adjudication<br/>Adjudication Rationale & Split Detection"]
+        Ambiguous -- No --> Clustered["Canonical Event Clustered"]
         T3 --> Clustered
     end
 
     subgraph SYNTHESIS ["4. Synthesis, Scoring & Safety Gating"]
-        Clustered --> Timeline[Chronological WIB Timeline Builder]
-        Clustered --> Conflict[Numerical & Claim Conflict Detector]
-        Clustered --> Scoring[Deterministic Urgency & Importance Scoring]
-        Timeline --> Safety[DEC-0004 Action Gating Guard\nTier-1 Authoritative Sources Only]
+        Clustered --> Timeline["Chronological WIB Timeline Builder"]
+        Clustered --> Conflict["Numerical & Claim Conflict Detector"]
+        Clustered --> Scoring["Deterministic Urgency & Importance Scoring"]
+        Timeline --> Safety["DEC-0004 Action Gating Guard<br/>Tier-1 Authoritative Sources Only"]
         Conflict --> Safety
         Scoring --> Safety
-        Safety --> LLM_Synth[Gemini Structured Synthesis\nSummary, What Changed, What Is Unknown]
+        Safety --> LLM_Synth["Gemini Structured Synthesis<br/>Summary, What Changed, What Is Unknown"]
     end
 
     subgraph PRESENTATION ["5. Presentation Layer"]
-        LLM_Synth --> API[FastAPI OpenAPI REST Endpoints]
-        API --> UI[Next.js 16 Dark-Mode Modern Frontend\nOverview · Timeline · Conflict Matrix · Sources]
+        LLM_Synth --> API["FastAPI OpenAPI REST Endpoints"]
+        API --> UI["Next.js 16 Dark-Mode Modern Frontend<br/>Overview · Timeline · Conflict Matrix · Sources"]
     end
 ```
 
