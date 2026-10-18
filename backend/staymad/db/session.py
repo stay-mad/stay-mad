@@ -15,7 +15,12 @@ DEFAULT_DB_URL = "sqlite:///:memory:"
 
 
 def get_database_url() -> str:
-    return os.getenv("DATABASE_URL", DEFAULT_DB_URL)
+    url = os.getenv("DATABASE_URL", DEFAULT_DB_URL)
+    if url.startswith("postgresql+asyncpg://"):
+        url = url.replace("postgresql+asyncpg://", "postgresql+psycopg://", 1)
+    elif url.startswith("postgresql://") and not url.startswith("postgresql+"):
+        url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+    return url
 
 
 def create_db_engine(db_url: str | None = None) -> Engine:

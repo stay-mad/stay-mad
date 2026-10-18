@@ -119,12 +119,19 @@ done
 
 # ─── 5. Build & Push Container Images ───────────────────────────────────────
 echo "==> [5/7] Building & Pushing Backend Image (${BACKEND_IMAGE})..."
-docker build -t "$BACKEND_IMAGE" -t "${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/backend:latest" -f deploy/Dockerfile .
+docker build --platform linux/amd64 -t "$BACKEND_IMAGE" -t "${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/backend:latest" -f deploy/Dockerfile .
 docker push "$BACKEND_IMAGE"
 docker push "${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/backend:latest"
 
 # ─── 6. Deploy Backend Service to Cloud Run ─────────────────────────────────
 echo "==> [6/7] Deploying Backend to Cloud Run (${BACKEND_SERVICE})..."
+CLOUDSQL_INSTANCES=$(gcloud sql instances list --format="value(connectionName)" 2>/dev/null | tr '\n' ',' | sed 's/,$//' || echo "")
+CLOUDSQL_ARG=()
+if [ -n "$CLOUDSQL_INSTANCES" ]; then
+    echo "    Attaching Cloud SQL instance(s): ${CLOUDSQL_INSTANCES}"
+    CLOUDSQL_ARG=("--add-cloudsql-instances=${CLOUDSQL_INSTANCES}")
+fi
+
 gcloud run deploy "$BACKEND_SERVICE" \
     --image="$BACKEND_IMAGE" \
     --region="$REGION" \
@@ -138,8 +145,9 @@ gcloud run deploy "$BACKEND_SERVICE" \
     --concurrency=80 \
     --service-account="$BACKEND_SA" \
     --allow-unauthenticated \
-    --set-env-vars="ENVIRONMENT=production,GEMINI_FIXTURE_MODE=false,DATA_MODE=live,LOG_FORMAT=json,RUN_MIGRATIONS=true" \
+    --set-env-vars="ENVIRONMENT=production,GEMINI_FIXTURE_MODE=false,DATA_MODE=live,LOG_FORMAT=json,RUN_MIGRATIONS=true,CORS_ORIGINS=*" \
     --set-secrets="GEMINI_API_KEY=stay-mad-gemini-api-key:latest,DATABASE_URL=stay-mad-database-url:latest" \
+    "${CLOUDSQL_ARG[@]}" \
     --quiet
 
 BACKEND_URL=$(gcloud run services describe "$BACKEND_SERVICE" --region="$REGION" --format='value(status.url)')
@@ -147,7 +155,7 @@ echo "    Backend URL: ${BACKEND_URL}"
 
 # ─── 7. Build & Deploy Frontend Service to Cloud Run ────────────────────────
 echo "==> [7/7] Building & Deploying Frontend to Cloud Run (${FRONTEND_SERVICE})..."
-docker build \
+docker build --platform linux/amd64 \
     --build-arg NEXT_PUBLIC_API_URL="${BACKEND_URL}" \
     -t "$FRONTEND_IMAGE" \
     -t "${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/frontend:latest" \

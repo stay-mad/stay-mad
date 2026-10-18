@@ -18,6 +18,14 @@ from backend.staymad.db import Base
 target_metadata = Base.metadata
 
 
+def _normalize_db_url(url: str) -> str:
+    if url.startswith("postgresql+asyncpg://"):
+        return url.replace("postgresql+asyncpg://", "postgresql+psycopg://", 1)
+    if url.startswith("postgresql://") and not url.startswith("postgresql+"):
+        return url.replace("postgresql://", "postgresql+psycopg://", 1)
+    return url
+
+
 def run_migrations_offline() -> None:
     url = config.get_main_option(
         "sqlalchemy.url",
@@ -26,6 +34,7 @@ def run_migrations_offline() -> None:
             "postgresql://staymad:staymad_secret@localhost:5432/staymad_db",
         ),
     )
+    url = _normalize_db_url(url)
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -40,7 +49,7 @@ def run_migrations_offline() -> None:
 def run_migrations_online() -> None:
     configuration = config.get_section(config.config_ini_section) or {}
     if "DATABASE_URL" in os.environ:
-        configuration["sqlalchemy.url"] = os.environ["DATABASE_URL"]
+        configuration["sqlalchemy.url"] = _normalize_db_url(os.environ["DATABASE_URL"])
 
     connectable = engine_from_config(
         configuration,
