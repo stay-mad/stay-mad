@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 import urllib.error
 import urllib.request
 from typing import Any
@@ -391,44 +392,76 @@ class GeminiClient(BaseGeminiClient):
             },
         }
 
-        url = (
-            f"https://generativelanguage.googleapis.com/v1beta/models/{self.model_version}:generateContent"
-            f"?key={self.api_key}"
-        )
+        candidate_models = [self.model_version]
+        for m in [
+            "gemini-flash-lite-latest",
+            "gemini-2.5-flash",
+            "gemini-3-flash-preview",
+        ]:
+            if m not in candidate_models:
+                candidate_models.append(m)
 
-        data = json.dumps(req_payload).encode("utf-8")
-        req = urllib.request.Request(
-            url,
-            data=data,
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
+        last_error: Exception | None = None
+        result_json: dict[str, Any] | None = None
 
-        try:
-            with urllib.request.urlopen(req, timeout=90) as resp:
-                result_json = json.loads(resp.read().decode("utf-8"))
+        for attempt in range(1, 4):
+            for model in candidate_models:
+                url = (
+                    f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+                    f"?key={self.api_key}"
+                )
+                data = json.dumps(req_payload).encode("utf-8")
+                req = urllib.request.Request(
+                    url,
+                    data=data,
+                    headers={"Content-Type": "application/json"},
+                    method="POST",
+                )
+                try:
+                    with urllib.request.urlopen(req, timeout=90) as resp:
+                        result_json = json.loads(resp.read().decode("utf-8"))
+                    break
+                except urllib.error.HTTPError as e:
+                    error_body = e.read().decode("utf-8", errors="replace")
+                    last_error = GeminiAPIError(
+                        f"Gemini API HTTP {e.code} for {model}: {error_body}"
+                    )
+                    if e.code in (429, 503):
+                        time.sleep(2 * attempt)
+                        continue
+                    if e.code == 404:
+                        continue
+                    raise last_error from e
+                except Exception as e:  # noqa: BLE001
+                    last_error = GeminiAPIError(
+                        f"Failed to communicate with Gemini API ({model}): {e}"
+                    )
+                    time.sleep(1)
+                    continue
+            if result_json is not None:
+                break
 
-            candidates = result_json.get("candidates", [])
-            if not candidates:
-                raise GeminiAPIError(f"No candidates returned by Gemini: {result_json}")
+        if result_json is None:
+            raise GeminiAPIError(f"Synthesize call failed: {last_error}")
 
-            part_text = candidates[0]["content"]["parts"][0]["text"]
-            parsed_data = json.loads(part_text)
-            response = SynthesizeResponse(**parsed_data)
+        candidates = result_json.get("candidates", [])
+        if not candidates:
+            raise GeminiAPIError(f"No candidates returned by Gemini: {result_json}")
 
-            # Enforce DEC-0008 & §53-C grounding contract:
-            # what_happened MUST have evidence_claim_ids unless insufficient_evidence
-            if (
-                not response.insufficient_evidence
-                and not response.what_happened.evidence_claim_ids
-                and payload.claims
-            ):
-                # Ground with primary claims if empty
-                response.what_happened.evidence_claim_ids = [
-                    c.claim_id for c in payload.claims if c.role == "PRIMARY"
-                ] or [payload.claims[0].claim_id]
+        part_text = candidates[0]["content"]["parts"][0]["text"]
+        parsed_data = json.loads(part_text)
+        response = SynthesizeResponse(**parsed_data)
 
-            return response
-        except Exception as e:
-            # Fallback per §53-C: EventSnapshot not produced if call fails
-            raise GeminiAPIError(f"Synthesize call failed: {e}") from e
+        # Enforce DEC-0008 & §53-C grounding contract:
+        # what_happened MUST have evidence_claim_ids unless insufficient_evidence
+        if (
+            not response.insufficient_evidence
+            and not response.what_happened.evidence_claim_ids
+            and payload.claims
+        ):
+            # Ground with primary claims if empty
+            response.what_happened.evidence_claim_ids = [
+                c.claim_id for c in payload.claims if c.role == "PRIMARY"
+            ] or [payload.claims[0].claim_id]
+
+        return response

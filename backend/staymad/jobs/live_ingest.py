@@ -15,7 +15,7 @@ import os
 import re
 import time
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -465,12 +465,21 @@ def _execute_live_ingest_cycle_impl(
                 continue
             try:
                 parsed = parse_rss_feed_xml(xml_content, s_domain, registry)
-                # Ambil hingga max_articles per sumber
-                selected = parsed[:max_articles]
-                print(
-                    f"     ✓ {len(selected)} artikel ditemukan di feed {feed_name.upper()}."
+                # Urutkan dari yang terbaru (reverse chronological)
+                parsed.sort(
+                    key=lambda it: (
+                        it.published_time
+                        if it.published_time
+                        else datetime.min.replace(tzinfo=UTC)
+                    ),
+                    reverse=True,
                 )
-                for idx, item in enumerate(selected):
+                # Ambil pool kandidat hingga 30 artikel teratas per feed untuk deduplikasi
+                candidate_pool = parsed[:30]
+                print(
+                    f"     ✓ {len(parsed)} artikel ditemukan di feed {feed_name.upper()} (memeriksa {len(candidate_pool)} kandidat terbaru)."
+                )
+                for idx, item in enumerate(candidate_pool):
                     raw_articles.append(
                         {
                             "id": f"art_live_{int(time.time())}_{len(raw_articles)}_{idx}",
@@ -502,6 +511,8 @@ def _execute_live_ingest_cycle_impl(
         }, last_run_cutoff
 
     # Pastikan setiap artikel memiliki content_hash yang terisi
+    from collections import defaultdict
+
     from backend.staymad.db.models.article import Article, ArticleVersion
     from backend.staymad.ingest.parser import clean_text, compute_content_hash
 
@@ -520,6 +531,7 @@ def _execute_live_ingest_cycle_impl(
     skipped_duplicate_count = 0
     skipped_older_count = 0
     latest_discovered_pub_time: datetime | None = None
+    source_new_counts: dict[str, int] = defaultdict(int)
 
     with session_factory() as session:
         # Load existing URLs and content_hashes from DB
@@ -543,6 +555,12 @@ def _execute_live_ingest_cycle_impl(
             existing_hashes = set()
 
         for art in raw_articles:
+            src_domain = art.get("source_domain", "default")
+
+            # Jika sudah mencapai kuota artikel baru per sumber ini, lewati
+            if source_new_counts[src_domain] >= max_articles:
+                continue
+
             art_url = art.get("url", "").strip()
             art_url_norm = art_url.rstrip("/")
             art_hash = art.get("content_hash", "")
@@ -594,6 +612,7 @@ def _execute_live_ingest_cycle_impl(
                     pass
 
             new_articles.append(art)
+            source_new_counts[src_domain] += 1
 
     print(
         f"\n🔍 Hasil Pemeriksaan Deduplikasi:"
@@ -684,17 +703,21 @@ def _execute_live_ingest_cycle_impl(
         synth_mgr = EventSynthesisManager(session=session, llm_client=llm)
         created_count = 0
         for ev_id in touched_event_ids:
-            snap = synth_mgr.synthesize_event_snapshot(
-                event_id=ev_id,
-                processing_run_id=result.processing_run_id,
-                force_snapshot=True,
-            )
-            if snap:
-                created_count += 1
-                print(
-                    f"  - [{snap.actionability_level.value}] {snap.headline[:50]}... "
-                    f"(Keyakinan: {snap.confidence_score:.0%})"
+            try:
+                snap = synth_mgr.synthesize_event_snapshot(
+                    event_id=ev_id,
+                    processing_run_id=result.processing_run_id,
+                    force_snapshot=True,
                 )
+                if snap:
+                    created_count += 1
+                    print(
+                        f"  - [{snap.actionability_level.value}] {snap.headline[:50]}... "
+                        f"(Keyakinan: {snap.confidence_score:.0%})"
+                    )
+            except Exception as e:  # noqa: BLE001
+                logger.warning("Gagal menyusun snapshot event %s: %s", ev_id, e)
+            time.sleep(0.5)
 
         session.commit()
         print(
