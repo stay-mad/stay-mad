@@ -347,3 +347,30 @@ class ErrorResponse(BaseModel):
     error: str
     message: str
     details: Any = None
+
+
+class IngestJobRequest(BaseModel):
+    source: str = "all"
+    limit: int = 3
+    db_url: str | None = None
+
+
+class JobIngestResponse(BaseModel):
+    status: Literal["accepted"] = "accepted"
+    job_id: str
+    message: str = "Live data ingestion job queued successfully in background."
+    source: str = "all"
+    limit: int = 3
+    created_at: datetime
+
+
+class JobDetailResponse(BaseModel):
+    job_id: str
+    status: str
+    source: str
+    limit: int
+    created_at: datetime
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    summary: dict[str, Any] | None = None
+    error: str | None = None

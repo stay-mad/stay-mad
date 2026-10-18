@@ -64,38 +64,123 @@ def map_category_string(cat: str | None, text_fallback: str = "") -> EventCatego
 
     # 1. Direct explicit category tag matching
     if norm_cat:
-        if any(k in norm_cat for k in ("DISASTER", "WEATHER", "BANJIR", "MERAPI", "GEMPA", "CUACA")):
+        if any(
+            k in norm_cat
+            for k in ("DISASTER", "WEATHER", "BANJIR", "MERAPI", "GEMPA", "CUACA")
+        ):
             return EventCategory.DISASTER_AND_WEATHER
-        if any(k in norm_cat for k in ("TRANSPORT", "KRL", "LALU LINTAS", "DISHUB", "KERETA", "OTOMOTIF")):
+        if any(
+            k in norm_cat
+            for k in ("TRANSPORT", "KRL", "LALU LINTAS", "DISHUB", "KERETA", "OTOMOTIF")
+        ):
             return EventCategory.TRANSPORTATION_AND_INFRASTRUCTURE
-        if any(k in norm_cat for k in ("GOVERNMENT", "POLICY", "KEBIJAKAN", "PERPRES", "POLITIK", "HUKUM", "NASIONAL", "METRO", "KORUPSI")):
+        if any(
+            k in norm_cat
+            for k in (
+                "GOVERNMENT",
+                "POLICY",
+                "KEBIJAKAN",
+                "PERPRES",
+                "POLITIK",
+                "HUKUM",
+                "NASIONAL",
+                "METRO",
+                "KORUPSI",
+            )
+        ):
             return EventCategory.GOVERNMENT_AND_PUBLIC_POLICY
 
     # 2. Text fallback semantic keyword matching
     if norm_text:
         # Check transportation & infrastructure
-        if any(k in norm_text for k in (
-            "krl", "mrt", "lrt", "kereta", "commuter", "jalan tol", "kemacetan",
-            "lalu lintas", "dishub", "transjakarta", "bandara", "pelabuhan", "pesawat",
-            "penerbangan", "terminal", "jembatan", "infrastruktur", "jalur ganda", "stasiun"
-        )):
+        if any(
+            k in norm_text
+            for k in (
+                "krl",
+                "mrt",
+                "lrt",
+                "kereta",
+                "commuter",
+                "jalan tol",
+                "kemacetan",
+                "lalu lintas",
+                "dishub",
+                "transjakarta",
+                "bandara",
+                "pelabuhan",
+                "pesawat",
+                "penerbangan",
+                "terminal",
+                "jembatan",
+                "infrastruktur",
+                "jalur ganda",
+                "stasiun",
+            )
+        ):
             return EventCategory.TRANSPORTATION_AND_INFRASTRUCTURE
 
         # Check disaster & weather
-        if any(k in norm_text for k in (
-            "banjir", "gempa", "merapi", "gunung api", "erupsi", "tsunami", "longsor",
-            "karhutla", "kebakaran hutan", "cuaca ekstrem", "hujan lebat", "bnpb", "bpbd",
-            "bmkg", "kekeringan", "angin kencang", "puting beliung", "rob"
-        )):
+        if any(
+            k in norm_text
+            for k in (
+                "banjir",
+                "gempa",
+                "merapi",
+                "gunung api",
+                "erupsi",
+                "tsunami",
+                "longsor",
+                "karhutla",
+                "kebakaran hutan",
+                "cuaca ekstrem",
+                "hujan lebat",
+                "bnpb",
+                "bpbd",
+                "bmkg",
+                "kekeringan",
+                "angin kencang",
+                "puting beliung",
+                "rob",
+            )
+        ):
             return EventCategory.DISASTER_AND_WEATHER
 
         # Check government & public policy
-        if any(k in norm_text for k in (
-            "kpk", "korupsi", "ott", "bupati", "gubernur", "walikota", "presiden", "menteri",
-            "dpr", "mpr", "mk", "mahkamah", "pemilu", "pilkada", "kebijakan", "perpres",
-            "uu ", "undang-undang", "apbd", "apbn", "pemerintah", "kemenkeu", "kemendagri",
-            "politik", "haji", "kemenag", "duta besar", "diplomasi", "tersangka", "vonis"
-        )):
+        if any(
+            k in norm_text
+            for k in (
+                "kpk",
+                "korupsi",
+                "ott",
+                "bupati",
+                "gubernur",
+                "walikota",
+                "presiden",
+                "menteri",
+                "dpr",
+                "mpr",
+                "mk",
+                "mahkamah",
+                "pemilu",
+                "pilkada",
+                "kebijakan",
+                "perpres",
+                "uu ",
+                "undang-undang",
+                "apbd",
+                "apbn",
+                "pemerintah",
+                "kemenkeu",
+                "kemendagri",
+                "politik",
+                "haji",
+                "kemenag",
+                "duta besar",
+                "diplomasi",
+                "tersangka",
+                "vonis",
+            )
+        ):
             return EventCategory.GOVERNMENT_AND_PUBLIC_POLICY
 
     # Safe default: government & public policy for general urban governance news

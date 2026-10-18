@@ -13,7 +13,6 @@ import argparse
 import logging
 import os
 import re
-import sys
 import time
 import uuid
 from datetime import datetime
@@ -81,6 +80,15 @@ KNOWN_RSS_SOURCES: dict[str, dict[str, Any]] = {
     },
 }
 
+ORDERED_ALLOWLIST_FEEDS: list[str] = [
+    "antara",
+    "tempo",
+    "cnbc",
+    "detik",
+    "cnn",
+    "setkab",
+]
+
 DEFAULT_RSS_URL = KNOWN_RSS_SOURCES["antara"]["url"]
 DEFAULT_DOMAIN = KNOWN_RSS_SOURCES["antara"]["domain"]
 
@@ -99,10 +107,10 @@ def _fetch_rss_content(url: str, fallbacks: list[str]) -> str | None:
         }
     candidate_urls = [url, *fallbacks]
     for target_fetch_url in candidate_urls:
-        for attempt in range(1, 4):
+        for attempt in range(1, 3):
             try:
                 with httpx.Client(
-                    timeout=45.0, headers=headers, follow_redirects=True
+                    timeout=15.0, headers=headers, follow_redirects=True
                 ) as client:
                     resp = client.get(target_fetch_url)
                     resp.raise_for_status()
@@ -114,7 +122,7 @@ def _fetch_rss_content(url: str, fallbacks: list[str]) -> str | None:
                     target_fetch_url,
                     e,
                 )
-                time.sleep(2)
+                time.sleep(1)
     return None
 
 
@@ -182,7 +190,7 @@ def _fetch_bmkg_articles(limit: int = 3) -> list[dict[str, Any]]:
                         {
                             "id": f"art_bmkg_list_{int(time.time())}_{idx}",
                             "title": title,
-                            "url": "https://data.bmkg.go.id/DataMKG/TEWS/gempaterkini.json",
+                            "url": f"https://data.bmkg.go.id/DataMKG/TEWS/gempaterkini.json#{idx}",
                             "published_at": g.get("DateTime")
                             or datetime.now().isoformat(),
                             "source_domain": "data.bmkg.go.id",
@@ -296,20 +304,44 @@ def _fetch_kompas_articles(limit: int = 3) -> list[dict[str, Any]]:
     return articles
 
 
-def run_live_ingest(
+def execute_live_ingest_cycle(
     source: str = "antara",
     rss_url: str | None = None,
     domain: str | None = None,
     max_articles: int = 3,
     db_url: str | None = None,
-) -> None:
-    print("=" * 60)
-    print(" Stay Mad — Live News Ingestion Runner")
-    print("=" * 60)
+    last_run_cutoff: datetime | None = None,
+) -> tuple[dict[str, Any], datetime | None]:
+    """Execute one batch ingestion, extraction, resolution, and synthesis cycle.
 
-    # 1. Pastikan environment live aktif & load .env jika ada
+    Enforces DEC-0003, DEC-0004, DEC-0006 with database deduplication check.
+    """
+    orig_data_mode = os.environ.get("DATA_MODE")
     os.environ["DATA_MODE"] = "live"
+    try:
+        return _execute_live_ingest_cycle_impl(
+            source=source,
+            rss_url=rss_url,
+            domain=domain,
+            max_articles=max_articles,
+            db_url=db_url,
+            last_run_cutoff=last_run_cutoff,
+        )
+    finally:
+        if orig_data_mode is None:
+            os.environ.pop("DATA_MODE", None)
+        else:
+            os.environ["DATA_MODE"] = orig_data_mode
 
+
+def _execute_live_ingest_cycle_impl(
+    source: str = "antara",
+    rss_url: str | None = None,
+    domain: str | None = None,
+    max_articles: int = 3,
+    db_url: str | None = None,
+    last_run_cutoff: datetime | None = None,
+) -> tuple[dict[str, Any], datetime | None]:
     if Path(".env").exists():
         with open(".env", encoding="utf-8") as f:
             for line in f:
@@ -321,19 +353,17 @@ def run_live_ingest(
 
     target_url = db_url or os.getenv("DATABASE_URL")
     if not target_url:
-        target_url = "postgresql://staymad:staymad_secret@localhost:5432/staymad_db"
+        target_url = "sqlite:///backend/staymad_dev.db"
 
-    print(
-        f"🗄  Koneksi Database: {target_url.split('@')[-1] if '@' in target_url else target_url}"
-    )
+    display_db = target_url.split("@")[-1] if "@" in target_url else target_url
+    print(f"🗄  Koneksi Database: {display_db}")
 
     registry = SourceRegistry.load_from_yaml()
     raw_articles: list[dict[str, Any]] = []
     now_iso = datetime.now().isoformat()
-
     s_key = source.strip().lower()
 
-    # Periksa sumber khusus non-RSS (BMKG API dan BPBD DKI)
+    # 1. Fetching raw candidate articles
     if s_key in ("bmkg", "data.bmkg.go.id", "src_bmkg_data"):
         print(
             "📡 Mengambil data terbuka langsung dari API BMKG (autogempa & gempaterkini)..."
@@ -348,24 +378,15 @@ def run_live_ingest(
         print("📡 Mengambil berita nasional langsung dari Kompas.com...")
         raw_articles = _fetch_kompas_articles(limit=max_articles)
     elif s_key in ("bnpb", "bnpb.go.id", "src_bnpb"):
-        print(
-            "⚠️  Portal BNPB (bnpb.go.id) saat ini diproteksi oleh Cloudflare Bot Challenge (HTTP 403 Forbidden).",
-            file=sys.stderr,
+        logger.warning(
+            "Portal BNPB (bnpb.go.id) terproteksi Cloudflare. Melewati sumber ini."
         )
-        print(
-            "💡 Disarankan menggunakan 'bmkg' (API Terbuka Data Gempa/Cuaca) atau 'bpbd' (Laporan Kebencanaan DKI) untuk data resmi Tier 1.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
     elif s_key in ("tier1", "gov"):
         print(
             "🏛️ Mengambil dari SEMUA sumber Tier 1 Resmi (BMKG, BPBD DKI, Setkab, Antara)..."
         )
-        bmkg_items = _fetch_bmkg_articles(limit=1)
-        bpbd_items = _fetch_bpbd_articles(limit=1)
-        raw_articles.extend(bmkg_items)
-        raw_articles.extend(bpbd_items)
-        # Ambil Setkab dan Antara lewat RSS
+        raw_articles.extend(_fetch_bmkg_articles(limit=1))
+        raw_articles.extend(_fetch_bpbd_articles(limit=1))
         for gov_key in ("setkab", "antara"):
             info = KNOWN_RSS_SOURCES[gov_key]
             xml = _fetch_rss_content(info["url"], info["fallbacks"])
@@ -388,30 +409,32 @@ def run_live_ingest(
                                 or it.excerpt
                                 or it.title,
                                 "author": it.author,
+                                "content_hash": it.content_hash,
                             }
                         )
                 except Exception as e:  # noqa: BLE001
                     logger.warning("Gagal parse feed %s: %s", gov_key, e)
     else:
-        # Sumber RSS standar
-        for k, v in KNOWN_RSS_SOURCES.items():
-            if s_key in (k, v["domain"], f"src_{k}") or s_key in v["domain"]:
-                s_key = k
-                break
-
-        targets: list[tuple[str, str, list[str]]] = []
+        # Standard RSS sources or 'all'
+        targets: list[tuple[str, str, str, list[str]]] = []
         if rss_url and domain:
-            targets.append((domain, rss_url, []))
+            targets.append(("custom", domain, rss_url, []))
             print(f"📡 Mengambil custom feed: {rss_url} ({domain})")
         elif s_key == "all":
             print(
-                f"🌐 Mengambil dari SEMUA portal berita resmi ({', '.join(KNOWN_RSS_SOURCES.keys())})"
+                f"🌐 Polling berurutan ke seluruh feed resmi aktif di config/sources.yaml ({', '.join(ORDERED_ALLOWLIST_FEEDS)})"
             )
-            for s_info in KNOWN_RSS_SOURCES.values():
-                targets.append((s_info["domain"], s_info["url"], s_info["fallbacks"]))
+            for feed_k in ORDERED_ALLOWLIST_FEEDS:
+                if feed_k in KNOWN_RSS_SOURCES:
+                    s_info = KNOWN_RSS_SOURCES[feed_k]
+                    targets.append(
+                        (feed_k, s_info["domain"], s_info["url"], s_info["fallbacks"])
+                    )
         elif s_key in KNOWN_RSS_SOURCES:
             s_info = KNOWN_RSS_SOURCES[s_key]
-            targets.append((s_info["domain"], s_info["url"], s_info["fallbacks"]))
+            targets.append(
+                (s_key, s_info["domain"], s_info["url"], s_info["fallbacks"])
+            )
             print(f"📡 Mengambil feed portal: {s_info['name']} ({s_info['domain']})")
         else:
             available = list(KNOWN_RSS_SOURCES.keys()) + [
@@ -420,88 +443,223 @@ def run_live_ingest(
                 "bpbd",
                 "tier1",
             ]
-            print(
-                f"❌ Sumber '{source}' tidak dikenal. Pilihan yang tersedia: {available} atau 'all'",
-                file=sys.stderr,
+            logger.error(
+                "Sumber '%s' tidak dikenal. Pilihan: %s atau 'all'", source, available
             )
-            sys.exit(1)
+            return {
+                "status": "error",
+                "error_message": f"Sumber '{source}' tidak dikenal.",
+                "total_found": 0,
+                "new_articles_count": 0,
+            }, last_run_cutoff
 
-        for s_domain, s_url, s_fallbacks in targets:
+        for feed_name, s_domain, s_url, s_fallbacks in targets:
+            print(f"  -> Mengambil feed {feed_name.upper()} ({s_url})...")
             xml_content = _fetch_rss_content(s_url, s_fallbacks)
             if not xml_content:
                 logger.warning(
-                    "Gagal mengambil feed dari %s, melewati sumber ini.", s_url
+                    "⚠️  Feed %s (%s) offline/timeout. Melanjutkan ke sumber berikutnya.",
+                    feed_name,
+                    s_url,
                 )
                 continue
             try:
                 parsed = parse_rss_feed_xml(xml_content, s_domain, registry)
-                per_source_quota = max(1, (max_articles + len(targets) - 1) // len(targets)) if s_key == "all" else max_articles
-                selected = parsed[:per_source_quota]
+                # Ambil hingga max_articles per sumber
+                selected = parsed[:max_articles]
+                print(
+                    f"     ✓ {len(selected)} artikel ditemukan di feed {feed_name.upper()}."
+                )
                 for idx, item in enumerate(selected):
                     raw_articles.append(
                         {
                             "id": f"art_live_{int(time.time())}_{len(raw_articles)}_{idx}",
                             "title": item.title,
                             "url": item.url,
-                            "published_at": (
-                                item.published_time.isoformat()
-                                if item.published_time
-                                else now_iso
-                            ),
+                            "published_at": item.published_time.isoformat()
+                            if item.published_time
+                            else now_iso,
                             "source_domain": s_domain,
                             "source_id": item.source_config.id,
                             "content_text": item.content_text
                             or item.excerpt
                             or item.title,
                             "author": item.author,
+                            "content_hash": item.content_hash,
                         }
                     )
             except Exception as e:  # noqa: BLE001
                 logger.warning("Gagal memproses feed %s: %s", s_domain, e)
 
     if not raw_articles:
-        print("❌ Tidak ada artikel yang berhasil diambil dari feed.", file=sys.stderr)
-        sys.exit(1)
+        print("⚠️  Tidak ada artikel yang berhasil diambil dari feed pada siklus ini.")
+        return {
+            "status": "no_articles_fetched",
+            "total_found": 0,
+            "new_articles_count": 0,
+            "claims_extracted": 0,
+            "events_updated": 0,
+        }, last_run_cutoff
 
-    # Batasi ke max_articles
-    raw_articles = raw_articles[:max_articles]
-    print(f"\n📰 Berhasil mengumpulkan {len(raw_articles)} artikel berita terkini:")
-    for idx, it in enumerate(raw_articles, 1):
-        print(f"  [{idx}] ({it['source_domain']}) {it['title'][:65]}...")
+    # Pastikan setiap artikel memiliki content_hash yang terisi
+    from backend.staymad.db.models.article import Article, ArticleVersion
+    from backend.staymad.ingest.parser import clean_text, compute_content_hash
 
-    # 4. Inisialisasi Database Engine & Session
+    for it in raw_articles:
+        if not it.get("content_hash"):
+            c_title = clean_text(it.get("title", ""))
+            c_body = clean_text(it.get("content_text", ""))
+            it["content_hash"] = compute_content_hash(c_title, c_body)
+
+    # 2. Database Deduplication & Filtering
     engine = create_db_engine(target_url)
     Base.metadata.create_all(engine)
     session_factory = create_session_factory(engine)
 
-    # 5. Siapkan LLM Client (Gemini Live)
+    new_articles: list[dict[str, Any]] = []
+    skipped_duplicate_count = 0
+    skipped_older_count = 0
+    latest_discovered_pub_time: datetime | None = None
+
+    with session_factory() as session:
+        # Load existing URLs and content_hashes from DB
+        try:
+            from sqlalchemy import select
+
+            existing_rows = session.execute(
+                select(Article.url, Article.content_hash)
+            ).all()
+            existing_urls = {row[0] for row in existing_rows if row[0]}
+            existing_urls.update(
+                {row[0].rstrip("/") for row in existing_rows if row[0]}
+            )
+            existing_hashes = {row[1] for row in existing_rows if row[1]}
+
+            v_hashes = session.scalars(select(ArticleVersion.content_hash)).all()
+            existing_hashes.update({h for h in v_hashes if h})
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Gagal memuat existing articles untuk deduplikasi: %s", exc)
+            existing_urls = set()
+            existing_hashes = set()
+
+        for art in raw_articles:
+            art_url = art.get("url", "").strip()
+            art_url_norm = art_url.rstrip("/")
+            art_hash = art.get("content_hash", "")
+            pub_iso = art.get("published_at")
+
+            # Check track of newest publication time
+            if pub_iso:
+                try:
+                    p_dt = datetime.fromisoformat(pub_iso)
+                    if (
+                        latest_discovered_pub_time is None
+                        or p_dt > latest_discovered_pub_time
+                    ):
+                        latest_discovered_pub_time = p_dt
+                except (ValueError, TypeError):
+                    pass
+
+            # 2a. Deduplication check against DB
+            if (
+                art_url and (art_url in existing_urls or art_url_norm in existing_urls)
+            ) or (art_hash and art_hash in existing_hashes):
+                logger.info(
+                    "⏩ [Dilewati - Duplikat DB] (%s) %s...",
+                    art.get("source_domain"),
+                    art.get("title", "")[:55],
+                )
+                skipped_duplicate_count += 1
+                continue
+
+            # 2b. Cutoff check since last run
+            if last_run_cutoff and pub_iso:
+                try:
+                    p_dt = datetime.fromisoformat(pub_iso)
+                    p_dt_utc = p_dt.astimezone() if p_dt.tzinfo else p_dt
+                    cutoff_cmp = (
+                        last_run_cutoff.astimezone()
+                        if last_run_cutoff.tzinfo
+                        else last_run_cutoff
+                    )
+                    if p_dt_utc <= cutoff_cmp:
+                        logger.info(
+                            "⏩ [Dilewati - Terbit sebelum run sebelumnya] (%s) %s...",
+                            art.get("source_domain"),
+                            art.get("title", "")[:55],
+                        )
+                        skipped_older_count += 1
+                        continue
+                except (ValueError, TypeError):
+                    pass
+
+            new_articles.append(art)
+
+    print(
+        f"\n🔍 Hasil Pemeriksaan Deduplikasi:"
+        f"\n   - Total artikel di feed : {len(raw_articles)}"
+        f"\n   - Duplikat dilewati     : {skipped_duplicate_count}"
+        f"\n   - Berita lama dilewati  : {skipped_older_count}"
+        f"\n   - Berita baru diproses  : {len(new_articles)}"
+    )
+
+    # If no new articles, skip Gemini LLM completely!
+    if not new_articles:
+        print("✓ Seluruh berita sudah tercatat di database.")
+        print(
+            "💡 Pemanggilan Gemini API dilewati — 0 token terpakai (menghemat kuota & biaya).\n"
+        )
+        return {
+            "status": "no_new_articles",
+            "total_found": len(raw_articles),
+            "new_articles_count": 0,
+            "skipped_duplicates": skipped_duplicate_count,
+            "skipped_older": skipped_older_count,
+            "claims_extracted": 0,
+            "events_updated": 0,
+            "snapshots_created": 0,
+        }, latest_discovered_pub_time or last_run_cutoff
+
+    print(f"\n📰 Berhasil menyaring {len(new_articles)} artikel berita baru:")
+    for idx, it in enumerate(new_articles, 1):
+        print(f"  [{idx}] ({it['source_domain']}) {it['title'][:65]}...")
+
+    # 3. Initialize Gemini LLM Client
     print("\n🤖 Menginisialisasi Gemini LLM Client...")
     try:
         llm = get_llm_client(data_mode="LIVE", use_mock=False)
         print(f"✓ LLM Client siap menggunakan model: {llm.model_version}")
     except Exception as e:  # noqa: BLE001
-        print(
-            f"❌ Inisialisasi LLM gagal (periksa GEMINI_API_KEY): {e}", file=sys.stderr
-        )
-        sys.exit(1)
+        logger.error("Inisialisasi LLM gagal: %s", e)
+        return {
+            "status": "error",
+            "error_message": f"Inisialisasi LLM gagal: {e}",
+            "total_found": len(raw_articles),
+            "new_articles_count": len(new_articles),
+        }, last_run_cutoff
 
     pipeline = IngestExtractionPipeline(registry=registry, llm_client=llm)
 
     with session_factory() as session:
         print("\n⚙️  Menjalankan ekstraksi klaim berbasis bukti...")
         try:
-            result = pipeline.process_batch(raw_articles, session)
+            result = pipeline.process_batch(new_articles, session)
         except Exception as e:  # noqa: BLE001
-            print(f"❌ Kesalahan pada tahap ekstraksi: {e}", file=sys.stderr)
+            logger.error("Kesalahan pada tahap ekstraksi: %s", e)
             session.rollback()
-            sys.exit(1)
+            return {
+                "status": "error",
+                "error_message": str(e),
+                "total_found": len(raw_articles),
+                "new_articles_count": len(new_articles),
+            }, last_run_cutoff
 
         print("✓ Ekstraksi Berhasil:")
-        print(f"  - Artikel Tersimpan: {result.articles_saved}")
-        print(f"  - Klaim Terverifikasi: {result.claims_extracted}")
-        print(f"  - Klaim Digugurkan (Tanpa Bukti): {result.claims_gated_out}")
+        print(f"  - Artikel Baru Tersimpan     : {result.articles_saved}")
+        print(f"  - Klaim Terverifikasi        : {result.claims_extracted}")
+        print(f"  - Klaim Digugurkan (No Bukti): {result.claims_gated_out}")
 
-        # 6. Event Resolution
+        # 4. Event Resolution
         print("\n🧩 Mengelompokkan berita ke dalam Canonical Events...")
         resolver = EventResolverManager(
             session=session, llm_client=llm, ablation_mode="tier3"
@@ -521,7 +679,7 @@ def run_live_ingest(
             f"✓ Resolusi Selesai: {len(touched_event_ids)} event kanonikal diperbarui/terbentuk."
         )
 
-        # 7. Synthesis & Snapshots
+        # 5. Synthesis & Snapshots
         print("\n📊 Menyusun Event Snapshots & Linimasa WIB...")
         synth_mgr = EventSynthesisManager(session=session, llm_client=llm)
         created_count = 0
@@ -540,10 +698,79 @@ def run_live_ingest(
 
         session.commit()
         print(
-            f"\n🎉 SELESAI! {created_count} peristiwa berhasil dipublikasikan ke tab LIVE."
+            f"\n🎉 SELESAI SIKLUS! {created_count} peristiwa berhasil dipublikasikan ke tab LIVE."
         )
+
+    return {
+        "status": "success",
+        "total_found": len(raw_articles),
+        "new_articles_count": len(new_articles),
+        "skipped_duplicates": skipped_duplicate_count,
+        "skipped_older": skipped_older_count,
+        "claims_extracted": result.claims_extracted,
+        "events_updated": len(touched_event_ids),
+        "snapshots_created": created_count,
+    }, latest_discovered_pub_time or last_run_cutoff
+
+
+def run_live_ingest(
+    source: str = "antara",
+    rss_url: str | None = None,
+    domain: str | None = None,
+    max_articles: int = 3,
+    db_url: str | None = None,
+    daemon: bool = False,
+    interval: int = 600,
+) -> None:
+    print("=" * 65)
+    print(" Stay Mad — Live Data Ingestion Worker & Continuous Background Runner")
+    print("=" * 65)
+
+    if not daemon:
+        summary, _ = execute_live_ingest_cycle(
+            source=source,
+            rss_url=rss_url,
+            domain=domain,
+            max_articles=max_articles,
+            db_url=db_url,
+        )
+        print(f"Ringkasan Akhir: {summary}")
+        return
+
+    # Continuous Daemon Mode
+    print("🚀 Memulai Continuous Live Ingestion Daemon...")
+    print(f"   Interval polling : {interval} detik ({interval / 60:.1f} menit)")
+    print(f"   Target Sumber    : {source}")
+    print(f"   Maks Berita/Run  : {max_articles}")
+    print("   (Tekan Ctrl+C untuk menghentikan daemon)\n")
+
+    cycle_count = 1
+    cutoff_time: datetime | None = None
+
+    try:
+        while True:
+            print(
+                f"\n{'=' * 25} [Siklus #{cycle_count}] {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} {'=' * 25}"
+            )
+            summary, cutoff_time = execute_live_ingest_cycle(
+                source=source,
+                rss_url=rss_url,
+                domain=domain,
+                max_articles=max_articles,
+                db_url=db_url,
+                last_run_cutoff=cutoff_time,
+            )
+            print(
+                f"✓ Siklus #{cycle_count} selesai: Ditemukan={summary.get('total_found', 0)}, "
+                f"Baru={summary.get('new_articles_count', 0)}, Klaim={summary.get('claims_extracted', 0)}, "
+                f"Event={summary.get('events_updated', 0)}"
+            )
+            cycle_count += 1
+            print(f"💤 Menunggu {interval} detik sebelum polling berikutnya...")
+            time.sleep(interval)
+    except KeyboardInterrupt:
         print(
-            "👉 Silakan buka http://localhost:3000 dan pilih tab 'Live' untuk melihat hasilnya.\n"
+            "\n\n🛑 Worker daemon dihentikan secara aman oleh pengguna. Sampai jumpa!"
         )
 
 
@@ -564,9 +791,26 @@ if __name__ == "__main__":
     parser.add_argument(
         "--domain", type=str, default=None, help="Custom Authorized domain"
     )
-    parser.add_argument("--limit", type=int, default=3, help="Max articles to process")
     parser.add_argument(
-        "--db-url", type=str, default=None, help="Database connection URL"
+        "--limit", type=int, default=3, help="Max articles to process per source"
+    )
+    parser.add_argument(
+        "--db-url",
+        type=str,
+        default=None,
+        help="Database connection URL (Postgres or SQLite)",
+    )
+    parser.add_argument(
+        "--daemon",
+        action="store_true",
+        default=False,
+        help="Run worker in a continuous background polling loop",
+    )
+    parser.add_argument(
+        "--interval",
+        type=int,
+        default=600,
+        help="Interval between poll cycles in daemon mode (default: 600s / 10 minutes)",
     )
     args = parser.parse_args()
 
@@ -576,4 +820,6 @@ if __name__ == "__main__":
         domain=args.domain,
         max_articles=args.limit,
         db_url=args.db_url,
+        daemon=args.daemon,
+        interval=args.interval,
     )

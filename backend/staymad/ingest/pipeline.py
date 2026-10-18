@@ -201,9 +201,14 @@ class IngestExtractionPipeline:
             extract_result = self.llm_client.extract(extract_input)
 
             # Update article category with LLM suggestion if confident and valid
-            if extract_result.suggested_category and extract_result.suggested_category != "UNKNOWN":
+            if (
+                extract_result.suggested_category
+                and extract_result.suggested_category != "UNKNOWN"
+            ):
                 try:
-                    article_entity.category = EventCategory[extract_result.suggested_category]
+                    article_entity.category = EventCategory[
+                        extract_result.suggested_category
+                    ]
                 except KeyError:
                     pass
 

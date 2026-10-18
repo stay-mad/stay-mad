@@ -4,23 +4,25 @@ PYTEST = $(VENV)/bin/pytest
 RUFF = $(VENV)/bin/ruff
 NODE_PATH = /Users/susi/.nvm/versions/node/v24.14.0/bin:/opt/homebrew/bin:$(PATH)
 
-.PHONY: test lint eval eval-baseline demo seed-demo run-api run-frontend build-frontend up down docker-build smoke-test help venv
+.PHONY: test lint eval eval-baseline demo seed-demo run-api run-frontend build-frontend up down docker-build smoke-test help venv run-live-worker run-live-daemon
 
 help:
 	@echo "Available commands:"
-	@echo "  make up             - Start services via docker-compose"
-	@echo "  make down           - Stop services via docker-compose"
-	@echo "  make docker-build   - Build Docker container images (backend & frontend)"
-	@echo "  make smoke-test     - Run automated smoke test suite (API_URL=...)"
-	@echo "  make test           - Run unit, contract, and e2e tests"
-	@echo "  make lint           - Run code linter and formatting checks"
-	@echo "  make eval           - Run model and pipeline evaluation against eval/gold"
-	@echo "  make eval-baseline  - Run baseline evaluation checks against demo fixtures (23 articles)"
-	@echo "  make demo           - Run end-to-end demo using eval/fixtures"
-	@echo "  make seed-demo      - Seed local SQLite dev database (backend/staymad_dev.db)"
-	@echo "  make run-api        - Launch FastAPI dev server on port 8080"
-	@echo "  make run-frontend   - Launch Next.js dev server on port 3000"
-	@echo "  make build-frontend - Build and validate Next.js frontend"
+	@echo "  make up               - Start services via docker-compose"
+	@echo "  make down             - Stop services via docker-compose"
+	@echo "  make docker-build     - Build Docker container images (backend & frontend)"
+	@echo "  make smoke-test       - Run automated smoke test suite (API_URL=...)"
+	@echo "  make test             - Run unit, contract, and e2e tests"
+	@echo "  make lint             - Run code linter and formatting checks"
+	@echo "  make eval             - Run model and pipeline evaluation against eval/gold"
+	@echo "  make eval-baseline    - Run baseline evaluation checks against demo fixtures (23 articles)"
+	@echo "  make demo             - Run end-to-end demo using eval/fixtures"
+	@echo "  make seed-demo        - Seed local SQLite dev database (backend/staymad_dev.db)"
+	@echo "  make run-live-worker  - Run single live ingest cycle for all allowlisted sources into SQLite dev DB"
+	@echo "  make run-live-daemon  - Run continuous live ingest worker loop (10m interval) into SQLite dev DB"
+	@echo "  make run-api          - Launch FastAPI dev server on port 8080"
+	@echo "  make run-frontend     - Launch Next.js dev server on port 3000"
+	@echo "  make build-frontend   - Build and validate Next.js frontend"
 
 venv:
 	@if [ ! -d "$(VENV)" ]; then \
@@ -67,6 +69,12 @@ live-ingest:
 
 live-ingest-all:
 	DATA_MODE=live DATABASE_URL="postgresql://staymad:staymad_secret@localhost:5432/staymad_db" $(PYTHON) -m backend.staymad.jobs.live_ingest --source all --limit 4
+
+run-live-worker:
+	DATA_MODE=live $(PYTHON) -m backend.staymad.jobs.live_ingest --source all --limit $(LIMIT) --db-url "sqlite:///backend/staymad_dev.db"
+
+run-live-daemon:
+	DATA_MODE=live $(PYTHON) -m backend.staymad.jobs.live_ingest --source all --limit $(LIMIT) --daemon --interval 600 --db-url "sqlite:///backend/staymad_dev.db"
 
 seed-demo:
 	$(PYTHON) -m backend.staymad.jobs.demo_pipeline --fixtures eval/fixtures/seed_demo_23.json --db-url sqlite:///backend/staymad_dev.db

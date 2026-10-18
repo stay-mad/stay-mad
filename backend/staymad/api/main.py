@@ -20,7 +20,7 @@ from backend.staymad.api.middleware import (
     setup_exception_handlers,
     setup_logging_middleware,
 )
-from backend.staymad.api.routers import events, locations, system
+from backend.staymad.api.routers import events, jobs, locations, system
 from backend.staymad.structured_logging import setup_structured_logging
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -93,6 +93,7 @@ def create_app() -> FastAPI:
     app.include_router(events.router)
     app.include_router(locations.router)
     app.include_router(system.router)
+    app.include_router(jobs.router)
 
     # 3. Mount custom OpenAPI contract schema
     def custom_openapi():
