@@ -80,6 +80,64 @@ class GeminiClient(BaseGeminiClient):
             schema_version=schema_version,
         )
 
+    def _call_api_with_retry(
+        self, payload: dict[str, Any], timeout: int = 60
+    ) -> dict[str, Any]:
+        """Execute Gemini REST API call with stable model fallbacks and exponential backoff retry.
+
+        Handles transient HTTP 503 (High Demand/Unavailable) and HTTP 429 (Rate Limit).
+        """
+        # Production-grade stable models (exclude unstable preview models)
+        candidate_models = [self.model_version]
+        for m in [
+            "gemini-2.5-flash",
+            "gemini-2.0-flash",
+            "gemini-1.5-flash",
+            "gemini-flash-lite-latest",
+        ]:
+            if m not in candidate_models:
+                candidate_models.append(m)
+
+        last_error: Exception | None = None
+
+        for attempt in range(1, 4):
+            for model in candidate_models:
+                url = (
+                    f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+                    f"?key={self.api_key}"
+                )
+                data = json.dumps(payload).encode("utf-8")
+                req = urllib.request.Request(
+                    url,
+                    data=data,
+                    headers={"Content-Type": "application/json"},
+                    method="POST",
+                )
+                try:
+                    with urllib.request.urlopen(req, timeout=timeout) as resp:
+                        return json.loads(resp.read().decode("utf-8"))
+                except urllib.error.HTTPError as e:
+                    error_body = e.read().decode("utf-8", errors="replace")
+                    last_error = GeminiAPIError(
+                        f"Gemini API HTTP {e.code} for {model}: {error_body}"
+                    )
+                    if e.code in (429, 503):
+                        time.sleep(2 * attempt)
+                        continue
+                    if e.code == 404:
+                        continue
+                    raise last_error from e
+                except Exception as e:  # noqa: BLE001
+                    last_error = GeminiAPIError(
+                        f"Failed to communicate with Gemini API ({model}): {e}"
+                    )
+                    time.sleep(1)
+                    continue
+
+        raise GeminiAPIError(
+            f"All Gemini models and retry attempts failed. Last error: {last_error}"
+        )
+
     def extract(self, article: ExtractInput) -> ExtractResponse:
         """Call Gemini to extract structured claims with JSON enforcement."""
         user_prompt = self.build_extract_user_prompt(article)
@@ -138,47 +196,7 @@ class GeminiClient(BaseGeminiClient):
             },
         }
 
-        # Support fallback models if primary model is unavailable or rate limited
-        candidate_models = [self.model_version]
-        for m in ["gemini-flash-lite-latest", "gemini-3-flash-preview"]:
-            if m not in candidate_models:
-                candidate_models.append(m)
-
-        last_error: Exception | None = None
-        result_json: dict[str, Any] | None = None
-
-        for model in candidate_models:
-            url = (
-                f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-                f"?key={self.api_key}"
-            )
-            data = json.dumps(payload).encode("utf-8")
-            req = urllib.request.Request(
-                url,
-                data=data,
-                headers={"Content-Type": "application/json"},
-                method="POST",
-            )
-            try:
-                with urllib.request.urlopen(req, timeout=45) as resp:
-                    result_json = json.loads(resp.read().decode("utf-8"))
-                break
-            except urllib.error.HTTPError as e:
-                error_body = e.read().decode("utf-8", errors="replace")
-                last_error = GeminiAPIError(
-                    f"Gemini API HTTP {e.code} for {model}: {error_body}"
-                )
-                if e.code in (404, 503, 429):
-                    continue
-                raise last_error from e
-            except Exception as e:  # noqa: BLE001
-                last_error = GeminiAPIError(
-                    f"Failed to communicate with Gemini API ({model}): {e}"
-                )
-                continue
-
-        if result_json is None:
-            raise GeminiAPIError(f"All Gemini models failed. Last error: {last_error}")
+        result_json = self._call_api_with_retry(payload, timeout=60)
 
         # Extract text content from candidate
         try:
@@ -290,48 +308,8 @@ class GeminiClient(BaseGeminiClient):
             },
         }
 
-        candidate_models = [self.model_version]
-        for m in ["gemini-flash-lite-latest", "gemini-3-flash-preview"]:
-            if m not in candidate_models:
-                candidate_models.append(m)
-
-        result_json: dict[str, Any] | None = None
-        last_error: Exception | None = None
-
-        for model in candidate_models:
-            url = (
-                f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-                f"?key={self.api_key}"
-            )
-            data = json.dumps(req_payload).encode("utf-8")
-            req = urllib.request.Request(
-                url,
-                data=data,
-                headers={"Content-Type": "application/json"},
-                method="POST",
-            )
-            try:
-                with urllib.request.urlopen(req, timeout=45) as resp:
-                    result_json = json.loads(resp.read().decode("utf-8"))
-                break
-            except urllib.error.HTTPError as e:
-                error_body = e.read().decode("utf-8", errors="replace")
-                last_error = GeminiAPIError(
-                    f"Gemini API HTTP {e.code} for {model}: {error_body}"
-                )
-                if e.code in (404, 503, 429):
-                    continue
-                raise last_error from e
-            except Exception as e:  # noqa: BLE001
-                last_error = GeminiAPIError(
-                    f"Failed to communicate with Gemini API ({model}): {e}"
-                )
-                continue
-
         try:
-            if result_json is None:
-                raise GeminiAPIError(f"All Gemini models failed: {last_error}")
-
+            result_json = self._call_api_with_retry(req_payload, timeout=60)
             candidates = result_json.get("candidates", [])
             if not candidates:
                 raise GeminiAPIError(f"No candidates returned by Gemini: {result_json}")
@@ -392,57 +370,7 @@ class GeminiClient(BaseGeminiClient):
             },
         }
 
-        candidate_models = [self.model_version]
-        for m in [
-            "gemini-flash-lite-latest",
-            "gemini-2.5-flash",
-            "gemini-3-flash-preview",
-        ]:
-            if m not in candidate_models:
-                candidate_models.append(m)
-
-        last_error: Exception | None = None
-        result_json: dict[str, Any] | None = None
-
-        for attempt in range(1, 4):
-            for model in candidate_models:
-                url = (
-                    f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-                    f"?key={self.api_key}"
-                )
-                data = json.dumps(req_payload).encode("utf-8")
-                req = urllib.request.Request(
-                    url,
-                    data=data,
-                    headers={"Content-Type": "application/json"},
-                    method="POST",
-                )
-                try:
-                    with urllib.request.urlopen(req, timeout=90) as resp:
-                        result_json = json.loads(resp.read().decode("utf-8"))
-                    break
-                except urllib.error.HTTPError as e:
-                    error_body = e.read().decode("utf-8", errors="replace")
-                    last_error = GeminiAPIError(
-                        f"Gemini API HTTP {e.code} for {model}: {error_body}"
-                    )
-                    if e.code in (429, 503):
-                        time.sleep(2 * attempt)
-                        continue
-                    if e.code == 404:
-                        continue
-                    raise last_error from e
-                except Exception as e:  # noqa: BLE001
-                    last_error = GeminiAPIError(
-                        f"Failed to communicate with Gemini API ({model}): {e}"
-                    )
-                    time.sleep(1)
-                    continue
-            if result_json is not None:
-                break
-
-        if result_json is None:
-            raise GeminiAPIError(f"Synthesize call failed: {last_error}")
+        result_json = self._call_api_with_retry(req_payload, timeout=90)
 
         candidates = result_json.get("candidates", [])
         if not candidates:
