@@ -142,11 +142,17 @@ def _fetch_bmkg_articles(limit: int = 3) -> list[dict[str, Any]]:
                         f"Pusat gempa berada pada koordinat {g.get('Coordinates')}, kedalaman {g.get('Kedalaman')}. "
                         f"Dirasakan: {g.get('Dirasakan', '-')}. Potensi: {g.get('Potensi')}."
                     )
+                    shakemap = g.get("Shakemap")
+                    bmkg_url = (
+                        f"https://data.bmkg.go.id/DataMKG/TEWS/{shakemap}"
+                        if shakemap
+                        else "https://data.bmkg.go.id/DataMKG/TEWS/autogempa.json"
+                    )
                     articles.append(
                         {
                             "id": f"art_bmkg_auto_{int(time.time())}",
                             "title": title,
-                            "url": f"https://data.bmkg.go.id/gempa/{g.get('DateTime', int(time.time()))}",
+                            "url": bmkg_url,
                             "published_at": g.get("DateTime")
                             or datetime.now().isoformat(),
                             "source_domain": "data.bmkg.go.id",
@@ -176,7 +182,7 @@ def _fetch_bmkg_articles(limit: int = 3) -> list[dict[str, Any]]:
                         {
                             "id": f"art_bmkg_list_{int(time.time())}_{idx}",
                             "title": title,
-                            "url": f"https://data.bmkg.go.id/gempa/terkini/{idx}_{g.get('DateTime', '')}",
+                            "url": "https://data.bmkg.go.id/DataMKG/TEWS/gempaterkini.json",
                             "published_at": g.get("DateTime")
                             or datetime.now().isoformat(),
                             "source_domain": "data.bmkg.go.id",
