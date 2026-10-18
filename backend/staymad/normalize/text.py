@@ -11,9 +11,11 @@ import unicodedata
 
 
 def clean_text(text: str) -> str:
-    """Normalize unicode, strip control characters, and collapse excess whitespace."""
+    """Normalize unicode, strip HTML tags, control characters, and collapse excess whitespace."""
     if not text:
         return ""
+    # Strip HTML tags if any (e.g. from RSS descriptions)
+    text = re.sub(r"<[^>]+>", " ", text)
     normalized = unicodedata.normalize("NFKC", text)
     # Remove control characters except standard whitespace
     normalized = "".join(
@@ -44,12 +46,14 @@ def create_excerpt(text: str, max_length: int = 500) -> str:
     if len(cleaned) <= max_length:
         return cleaned
 
+    target_len = max(0, max_length - 3)
     # Try to break at word boundary
-    truncated = cleaned[:max_length]
+    truncated = cleaned[:target_len]
     last_space = truncated.rfind(" ")
-    if last_space > int(max_length * 0.7):
+    if last_space > int(target_len * 0.7):
         truncated = truncated[:last_space]
-    return truncated.rstrip() + "..."
+    res = truncated.rstrip() + "..."
+    return res[:max_length]
 
 
 def verbatim_substring_match(

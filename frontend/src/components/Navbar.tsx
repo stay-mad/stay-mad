@@ -69,19 +69,24 @@ export function Navbar({
     return () => clearInterval(interval);
   }, [lang]);
 
-  // System Health Check
+  // System Health Check (periodic check every 10s to ensure realtime recovery)
   useEffect(() => {
     let mounted = true;
-    api
-      .getHealth()
-      .then((res) => {
-        if (mounted) setSystemHealth(res.status);
-      })
-      .catch(() => {
-        if (mounted) setSystemHealth("degraded");
-      });
+    const check = () => {
+      api
+        .getHealth()
+        .then((res) => {
+          if (mounted) setSystemHealth(res.status);
+        })
+        .catch(() => {
+          if (mounted) setSystemHealth("degraded");
+        });
+    };
+    check();
+    const interval = setInterval(check, 10000);
     return () => {
       mounted = false;
+      clearInterval(interval);
     };
   }, []);
 
@@ -265,17 +270,27 @@ export function Navbar({
               className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-mono border whitespace-nowrap shadow-xs ${
                 systemHealth === "ok"
                   ? "border-emerald-200 dark:border-emerald-900/60 text-emerald-800 dark:text-emerald-300 bg-emerald-50/60 dark:bg-emerald-950/20"
+                  : systemHealth === "loading"
+                  ? "border-[var(--border-subtle)] text-[var(--text-muted)] bg-[var(--bg-subtle)]"
                   : "border-amber-200 dark:border-amber-900/60 text-amber-800 dark:text-amber-300 bg-amber-50/60 dark:bg-amber-950/20"
               }`}
               title="Status koneksi REST API port 8080"
             >
               <span
                 className={`h-1.5 w-1.5 rounded-full shrink-0 ${
-                  systemHealth === "ok" ? "bg-emerald-600 dark:bg-emerald-400" : "bg-amber-600 dark:bg-amber-400"
+                  systemHealth === "ok"
+                    ? "bg-emerald-600 dark:bg-emerald-400"
+                    : systemHealth === "loading"
+                    ? "bg-blue-500 animate-pulse"
+                    : "bg-amber-600 dark:bg-amber-400"
                 }`}
               />
               <span className="whitespace-nowrap font-medium">
-                {systemHealth === "ok" ? "API 8080 · OK" : "API Fallback"}
+                {systemHealth === "ok"
+                  ? "API 8080 · OK"
+                  : systemHealth === "loading"
+                  ? (lang === "en" ? "Connecting..." : "Menghubungkan...")
+                  : "API Fallback"}
               </span>
             </div>
           </div>
